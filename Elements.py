@@ -23,3 +23,6 @@ QUANTITYINPUT = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/d
 NEXTPICKTASK = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div[3]/button")
 STATIONINPUT = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]/div[2]/input")
 NEXTORDERBUTTON = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div[3]/button")
+
+SALESORDERREFRESH = "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]"
+BACKBUTTONREFRESH = "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div[1]/button"

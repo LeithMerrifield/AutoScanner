@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.common import exceptions
 import Elements
 import Login
+import asyncio
 
 cookieSite = "https://5230881.app.netsuite.com/"
 mobileEmulator = "https://5230881.app.netsuite.com/app/site/hosting/scriptlet.nl?script=4662&deploy=1&compid=5230881"
@@ -45,7 +46,7 @@ class MainWebDriver(object):
         Logs in and navigates to the WMS order list
         
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self.driver = webdriver.Chrome()
         #self.driver.get(netsuiteSSO)
         #self.driver.delete_all_cookies()
@@ -65,6 +66,13 @@ class MainWebDriver(object):
             except exceptions.InvalidCookieDomainException as e:
                 print(e.msg)
 
+    def getOrderLength(self):
+        table = "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/div/div/div[6]/div[1]/table/tbody" # need xpath of table
+        WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable((By.XPATH, table)))
+        foo = self.driver.find_element(By.XPATH, table)
+        bar = foo.find_elements(By.XPATH, ".//tr")
+        return len(bar)
+
     # Allows for input of a list of orders.
     def InputOrders(self):
         self.OrderList = []
@@ -83,42 +91,62 @@ class MainWebDriver(object):
                 break
                 
     # The process of picking an individual order
+    # Long orders need a away of counting amount of entries. by detecting load more button
+    # need a test order :L
     def Pick(self,order):
-        sleep(1)
-        while True:
+        sleep(2)
+        length = self.getOrderLength()
+        lengthFlag = True if length > 9 else False
+        print(length)
+
+        for i in range(length):
+            sleep(1)
             WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.FIRSTENTRY)).click()
             sleep(1)
             WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.BINNUMBER)).click()
             sleep(1)
             WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.ITEMNUMBER)).click()
-            sleep(1)
+            sleep(3)
             WebDriverWait(self.driver, 50).until(EC.presence_of_element_located(Elements.QUANTITY))
             Amount = self.driver.find_element(By.XPATH,"/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]/span" ).text.split(" ")[0]
             Amount += "\n"
             WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.QUANTITYINPUT)).send_keys(Amount)
             sleep(1)
-            try:
-                WebDriverWait(self.driver, 3).until(EC.element_to_be_clickable(Elements.NEXTPICKTASK)).click()
-            except:
-                station = ""
-                if "sau" in order.lower():
-                    station = "PackStation03\n"
-                else:
-                    station = "PackStation02\n"
-                WebDriverWait(self.driver, 3).until(EC.element_to_be_clickable(Elements.STATIONINPUT)).send_keys(station)
-                sleep(1)
-                WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NEXTORDERBUTTON)).click()
-                break
+            if i == length - 1 and not lengthFlag:
+                continue
+            WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(Elements.NEXTPICKTASK)).click()
+            
+        # recursive to handle longer orders. Hasn't been tested
+        if lengthFlag:
+            print("Next Rotation")
+            self.Pick(order)
+            return
+
+        sleep(3)
+        station = ""
+        if "sau" in order.lower():
+            station = "PackStation03\n"
+        else:
+            station = "PackStation02\n"
+        WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(Elements.STATIONINPUT)).send_keys(station)
+        sleep(1)
+        WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NEXTORDERBUTTON)).click()
+        
     
     # Will run the scanning/picking process for n orders in orderlist
-    def Scan(self):
-        while True:
-            self.InputOrders()
-            for order in self.OrderList:
-                WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.ORDERINPUT)).send_keys(order)
-                WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.ENTERORDER)).click()
-                self.Pick(order)
-            print("Scanning Complete \n Start Again\n")
+    def Scan(self,myOrders: list):
+        #self.InputOrders()
+        myOrders.reverse()
+        for order in myOrders:
+            WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.ORDERINPUT)).send_keys(order)
+            WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.ENTERORDER)).click()
+            self.Pick(order)
+        print("Scanning Complete \n Start Again\n")
+
+    def Refresh(self):
+        self.driver.find_element(By.XPATH, Elements.BACKBUTTONREFRESH).click()
+        sleep(2)
+        self.driver.find_element(By.XPATH, Elements.SALESORDERREFRESH).click()
 
     # Goes through the process of logging into microsoft and navigates to the list of active orders.
     def login(self):

@@ -1,7 +1,6 @@
-from MainWebDriver import MainWebDriver
-myDriver = MainWebDriver()
-myDriver.login()
-myDriver.Scan()
-#sleep(30)
-x = input()
-#myDriver.save_cookies()
+import MainWebDriver
+import FirstApp
+
+if __name__ == "__main__":
+    main = FirstApp.LoginApp()
+    main.run()

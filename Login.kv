@@ -1,0 +1,84 @@
+#:kivy 2.1.0
+<Login>:
+    BoxLayout:
+        id: login_layout
+        orientation: 'vertical'
+        padding: [10,10,10,10]
+        spacing: 10
+        Label:
+            text: 'Username'
+            font_size: 28
+            color: (1,1,1)
+            #text_size: root.width-20, 20
+            size_hint_y: .1
+
+        TextInput:
+            id: username
+            multiline:False
+            font_size: 28
+            write_tab:False
+            size_hint_y: .2
+
+        Label:
+            text: 'Password'
+            #color: (159/255,183/255,224/255) darker blue
+            color: (1,1,1)
+            font_size: 28
+            #text_size: root.width-20, 20
+            size_hint_y: .1
+
+        TextInput:
+            id: password
+            multiline:False
+            write_tab:False
+            password:True
+            font_size: 28
+            size_hint_y: .2
+
+        Button:
+            text: 'Login'
+            font_size: 24
+            on_press: root.do_login()
+            size_hint_y: .2
+
+
+<ScannerScreen>:
+    BoxLayout:
+        id: scanner_layout
+        orientation: 'vertical'
+        padding: [10,10,10,10]
+        spacing: 10
+
+        Label:
+            text: 'Auto Picker'
+            font_size: 32
+            size_hint_y: 0.1
+        TextInput:
+            id: order_input
+            multiline: False
+            write_tab: False
+            font_size: 28
+            size_hint_y: 0.1
+        BackgroundLabel:
+            id: order_list
+            size_hint_y: 0.7
+            text: ""
+            #background_color: 207/255, 240/255, 240/255, 1
+            #valign: "top"
+            #text_size: root.width, root.height
+        Button:
+            text: 'Pick'
+            size_hint_y: .1
+            on_press: root.do_pick()
+
+<BackgroundColor@Widget>:
+    background_color: 1, 1, 1, 1
+    canvas.before:
+        Color:
+            rgba: root.background_color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<BackgroundLabel@Label+BackgroundColor>:
+    background_color: 0, 0, 0, 0
