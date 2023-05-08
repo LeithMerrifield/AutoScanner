@@ -99,9 +99,10 @@ class MainWebDriver(object):
             Amount = self.driver.find_element(By.XPATH,"/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]/span" ).text.split(" ")[0]
             Amount += "\n"
             WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.QUANTITYINPUT)).send_keys(Amount)
-            sleep(1)
+            sleep(3)
 
             mark = self.driver.find_element(By.XPATH, "/html/body/div/div/div[1]/div[2]/div[1]")
+            print(mark.text.lower() + " : " + "Pick Task Complete".lower() + (mark.text.lower() == "Pick Task Complete".lower()))
             if(mark.text.lower() == "Pick Task Complete".lower()):
                 WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(Elements.NEXTPICKTASK)).click()
             else:
@@ -155,7 +156,4 @@ class MainWebDriver(object):
 
     def IdentifyPage(self):
         mark = self.driver.find_element(By.XPATH, "/html/body/div/div/div[1]/div[2]/div[1]")
-        print(mark.text)
-        stages = Elements.STAGE
-        
-        pass
+        return mark.text
