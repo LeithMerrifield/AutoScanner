@@ -66,13 +66,6 @@ class MainWebDriver(object):
             except exceptions.InvalidCookieDomainException as e:
                 print(e.msg)
 
-    def getOrderLength(self):
-        table = "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/div/div/div[6]/div[1]/table/tbody" # need xpath of table
-        WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable((By.XPATH, table)))
-        foo = self.driver.find_element(By.XPATH, table)
-        bar = foo.find_elements(By.XPATH, ".//tr")
-        return len(bar)
-
     # Allows for input of a list of orders.
     def InputOrders(self):
         self.OrderList = []
@@ -92,12 +85,9 @@ class MainWebDriver(object):
                 
     # The process of picking an individual order
     def Pick(self,order):
+        print("In pick 2")
         sleep(2)
-        length = self.getOrderLength()
-        lengthFlag = True if length > 9 else False
-        print(length)
-
-        for i in range(length):
+        while True:
             sleep(1)
             WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.FIRSTENTRY)).click()
             sleep(1)
@@ -110,21 +100,13 @@ class MainWebDriver(object):
             Amount += "\n"
             WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.QUANTITYINPUT)).send_keys(Amount)
             sleep(1)
-            if i == length - 1 and not lengthFlag:
-                continue
-            try:
-                WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(Elements.NEXTPICKTASK)).click()
-            except:
-                length = False
-                # means the order is exactly 10 and I don't think there is an elegant way to differentiate between exactly 10 and > 10 items
-                continue
-            
-        # recursive to handle longer orders.
-        if lengthFlag:
-            print("Next Rotation")
-            self.Pick(order)
-            return
 
+            mark = self.driver.find_element(By.XPATH, "/html/body/div/div/div[1]/div[2]/div[1]")
+            if(mark.text.lower() == "Pick Task Complete".lower()):
+                WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(Elements.NEXTPICKTASK)).click()
+            else:
+                break
+        
         sleep(3)
         station = ""
         if "sau" in order.lower():
@@ -134,7 +116,6 @@ class MainWebDriver(object):
         WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(Elements.STATIONINPUT)).send_keys(station)
         sleep(1)
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NEXTORDERBUTTON)).click()
-        
     
     # Will run the scanning/picking process for n orders in orderlist
     def Scan(self,myOrders: list):
@@ -151,7 +132,6 @@ class MainWebDriver(object):
         self.driver.find_element(By.XPATH, Elements.BACKBUTTONREFRESH).click()
         sleep(2)
         self.driver.find_element(By.XPATH, Elements.SALESORDERREFRESH).click()
-
     # Goes through the process of logging into microsoft and navigates to the list of active orders.
     def login(self):
         self.driver.get(netsuiteSSO)
@@ -172,3 +152,10 @@ class MainWebDriver(object):
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.RELEASEDORDER)).click()
         sleep(1)
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.SALESORDER)).click()
+
+    def IdentifyPage(self):
+        mark = self.driver.find_element(By.XPATH, "/html/body/div/div/div[1]/div[2]/div[1]")
+        print(mark.text)
+        stages = Elements.STAGE
+        
+        pass
