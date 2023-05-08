@@ -79,3 +79,5 @@ class LoginApp(App):
         return manager
 
 
+if __name__ == "__main__":
+    LoginApp().run()

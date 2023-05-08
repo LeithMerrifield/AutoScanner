@@ -91,8 +91,6 @@ class MainWebDriver(object):
                 break
                 
     # The process of picking an individual order
-    # Long orders need a away of counting amount of entries. by detecting load more button
-    # need a test order :L
     def Pick(self,order):
         sleep(2)
         length = self.getOrderLength()
@@ -114,9 +112,14 @@ class MainWebDriver(object):
             sleep(1)
             if i == length - 1 and not lengthFlag:
                 continue
-            WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(Elements.NEXTPICKTASK)).click()
+            try:
+                WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(Elements.NEXTPICKTASK)).click()
+            except:
+                length = False
+                # means the order is exactly 10 and I don't think there is an elegant way to differentiate between exactly 10 and > 10 items
+                continue
             
-        # recursive to handle longer orders. Hasn't been tested
+        # recursive to handle longer orders.
         if lengthFlag:
             print("Next Rotation")
             self.Pick(order)
@@ -138,6 +141,7 @@ class MainWebDriver(object):
         #self.InputOrders()
         myOrders.reverse()
         for order in myOrders:
+            sleep(2)
             WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.ORDERINPUT)).send_keys(order)
             WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.ENTERORDER)).click()
             self.Pick(order)
