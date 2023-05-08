@@ -26,3 +26,7 @@ NEXTORDERBUTTON = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]
 
 SALESORDERREFRESH = "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]"
 BACKBUTTONREFRESH = "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div[1]/button"
+
+STAGE = ["Select Application","Select Warehouse","Main Menu","Picking","Select Picking Mode","Select Order Type","Select Order"]
+#Pick Task Complete
+#Enter Staging Bin
