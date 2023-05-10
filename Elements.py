@@ -28,5 +28,14 @@ SALESORDERREFRESH = "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]"
 BACKBUTTONREFRESH = "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div[1]/button"
 
 STAGE = ["Select Application","Select Warehouse","Main Menu","Picking","Select Picking Mode","Select Order Type","Select Order"]
+STAGEDICT = {
+            STAGE[0]: 1, # Select Application = 1
+            STAGE[1]: 2, # Select Warehouse = 2
+            STAGE[2]: 3, # Main Menu = 3
+            STAGE[3]: 4, # Picking = 4
+            STAGE[4]: 5, # Select Picking Mode = 5
+            STAGE[5]: 6, # Select Order Type = 6
+            STAGE[6]: 7, # Select Order = 7
+        }
 #Pick Task Complete
 #Enter Staging Bin

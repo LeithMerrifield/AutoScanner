@@ -10,7 +10,7 @@ from kivy.clock import Clock
 from kivy.graphics import Color, Rectangle
 from MainWebDriver import MainWebDriver
 from hashlib import pbkdf2_hmac
-
+import atexit
 
 r = 74
 g = 85
@@ -77,7 +77,10 @@ class LoginApp(App):
         manager.add_widget(ScannerScreen(name="scanner"))
 
         return manager
-
+    
+def exit_handler():
+    myDriver.Exit()
 
 if __name__ == "__main__":
+    atexit.register(exit_handler)
     LoginApp().run()

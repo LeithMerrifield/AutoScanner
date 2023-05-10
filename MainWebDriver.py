@@ -8,6 +8,7 @@ from selenium.common import exceptions
 import Elements
 import Login
 import asyncio
+from state import State
 
 cookieSite = "https://5230881.app.netsuite.com/"
 mobileEmulator = "https://5230881.app.netsuite.com/app/site/hosting/scriptlet.nl?script=4662&deploy=1&compid=5230881"
@@ -51,6 +52,7 @@ class MainWebDriver(object):
         #self.driver.get(netsuiteSSO)
         #self.driver.delete_all_cookies()
         self.OrderList = []
+        self.state = State()
     
     def save_cookies(self):
         cookies = self.driver.get_cookies()
@@ -102,7 +104,7 @@ class MainWebDriver(object):
             sleep(3)
 
             mark = self.driver.find_element(By.XPATH, "/html/body/div/div/div[1]/div[2]/div[1]")
-            print(mark.text.lower() + " : " + "Pick Task Complete".lower() + (mark.text.lower() == "Pick Task Complete".lower()))
+            print(mark.text.lower() + " : " + "Pick Task Complete".lower())
             if(mark.text.lower() == "Pick Task Complete".lower()):
                 WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(Elements.NEXTPICKTASK)).click()
             else:
@@ -117,9 +119,16 @@ class MainWebDriver(object):
         WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(Elements.STATIONINPUT)).send_keys(station)
         sleep(1)
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NEXTORDERBUTTON)).click()
-    
+    def Resync(self):
+        self.driver.get(mobileEmulator)
+        sleep(3)
+        self.GetToOrders()
+
     # Will run the scanning/picking process for n orders in orderlist
     def Scan(self,myOrders: list):
+        self.state.changeState(self.IdentifyPage())
+        if(self.state.currentState != Elements.STAGEDICT["Select Order"]):
+            self.Resync()
         #self.InputOrders()
         myOrders.reverse()
         for order in myOrders:
@@ -142,6 +151,9 @@ class MainWebDriver(object):
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NEXTBUTTON)).click()
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NOBUTTON)).click()
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.NETSUITE_ENVIRONMENT)).click()
+        self.GetToOrders()
+
+    def GetToOrders(self):
         self.driver.get(mobileEmulator)
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.WMS)).click()
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.WAREHOUSE)).click()
@@ -153,6 +165,11 @@ class MainWebDriver(object):
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.RELEASEDORDER)).click()
         sleep(1)
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.SALESORDER)).click()
+        self.state.changeState(self.IdentifyPage())
+        print(self.state.currentState)
+
+    def Exit(self):
+        self.driver.close()
 
     def IdentifyPage(self):
         mark = self.driver.find_element(By.XPATH, "/html/body/div/div/div[1]/div[2]/div[1]")
