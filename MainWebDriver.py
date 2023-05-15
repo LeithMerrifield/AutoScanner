@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.common import exceptions
 import Elements
 import Login
-import asyncio
+import threading
 from state import State
 
 cookieSite = "https://5230881.app.netsuite.com/"
@@ -48,12 +48,15 @@ class MainWebDriver(object):
         
     """
     def __init__(self) -> None:
-        self.driver = webdriver.Chrome()
+        threading.Thread(target=self.run_driver).start()
         #self.driver.get(netsuiteSSO)
         #self.driver.delete_all_cookies()
         self.OrderList = []
         self.state = State()
     
+    def run_driver(self):
+        self.driver = webdriver.Chrome()
+
     def save_cookies(self):
         cookies = self.driver.get_cookies()
         pickle.dump(cookies,open(self.cookiePath,'wb'))
@@ -119,6 +122,7 @@ class MainWebDriver(object):
         WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(Elements.STATIONINPUT)).send_keys(station)
         sleep(1)
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NEXTORDERBUTTON)).click()
+        
     def Resync(self):
         self.driver.get(mobileEmulator)
         sleep(3)
@@ -166,7 +170,6 @@ class MainWebDriver(object):
         sleep(1)
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.SALESORDER)).click()
         self.state.changeState(self.IdentifyPage())
-        print(self.state.currentState)
 
     def Exit(self):
         self.driver.close()
