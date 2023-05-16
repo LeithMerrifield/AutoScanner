@@ -1,5 +1,5 @@
 #:kivy 2.1.0
-<Login>:
+<LoginScreen>:
     BoxLayout:
         id: login_layout
         orientation: 'vertical'
@@ -58,7 +58,7 @@
                 font_size: 32
             Image:
                 id: status_image
-                source: 'StatusRed.png'
+                source: app.path + '/src/images/StatusRed.png'
                 size: self.texture_size
         TextInput:
             id: order_input
