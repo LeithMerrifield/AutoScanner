@@ -7,7 +7,8 @@ from selenium.webdriver.common.by import By
 from selenium.common import exceptions
 import Elements
 import Login
-import asyncio
+import threading
+from state import State
 
 cookieSite = "https://5230881.app.netsuite.com/"
 mobileEmulator = "https://5230881.app.netsuite.com/app/site/hosting/scriptlet.nl?script=4662&deploy=1&compid=5230881"
@@ -47,11 +48,15 @@ class MainWebDriver(object):
         
     """
     def __init__(self) -> None:
-        self.driver = webdriver.Chrome()
+        threading.Thread(target=self.run_driver).start()
         #self.driver.get(netsuiteSSO)
         #self.driver.delete_all_cookies()
         self.OrderList = []
+        self.state = State()
     
+    def run_driver(self):
+        self.driver = webdriver.Chrome()
+
     def save_cookies(self):
         cookies = self.driver.get_cookies()
         pickle.dump(cookies,open(self.cookiePath,'wb'))
@@ -102,7 +107,7 @@ class MainWebDriver(object):
             sleep(3)
 
             mark = self.driver.find_element(By.XPATH, "/html/body/div/div/div[1]/div[2]/div[1]")
-            print(mark.text.lower() + " : " + "Pick Task Complete".lower() + (mark.text.lower() == "Pick Task Complete".lower()))
+            print(mark.text.lower() + " : " + "Pick Task Complete".lower())
             if(mark.text.lower() == "Pick Task Complete".lower()):
                 WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(Elements.NEXTPICKTASK)).click()
             else:
@@ -117,9 +122,17 @@ class MainWebDriver(object):
         WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(Elements.STATIONINPUT)).send_keys(station)
         sleep(1)
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NEXTORDERBUTTON)).click()
-    
+
+    def Resync(self):
+        self.driver.get(mobileEmulator)
+        sleep(3)
+        self.GetToOrders()
+
     # Will run the scanning/picking process for n orders in orderlist
-    def Scan(self,myOrders: list):
+    def Scan(self,myOrders: list,statusFlag):
+        self.state.changeState(self.IdentifyPage())
+        if(self.state.currentState != Elements.STAGEDICT["Select Order"]):
+            self.Resync()
         #self.InputOrders()
         myOrders.reverse()
         for order in myOrders:
@@ -127,6 +140,7 @@ class MainWebDriver(object):
             WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.ORDERINPUT)).send_keys(order)
             WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.ENTERORDER)).click()
             self.Pick(order)
+        statusFlag[0] = True
         print("Scanning Complete \n Start Again\n")
 
     def Refresh(self):
@@ -134,7 +148,7 @@ class MainWebDriver(object):
         sleep(2)
         self.driver.find_element(By.XPATH, Elements.SALESORDERREFRESH).click()
     # Goes through the process of logging into microsoft and navigates to the list of active orders.
-    def login(self):
+    def login(self,loginFlag):
         self.driver.get(netsuiteSSO)
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.USERNAMEFIELD)).send_keys(Login.Username)
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NEXTBUTTON)).click()
@@ -142,6 +156,9 @@ class MainWebDriver(object):
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NEXTBUTTON)).click()
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NOBUTTON)).click()
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.NETSUITE_ENVIRONMENT)).click()
+        self.GetToOrders(loginFlag)
+
+    def GetToOrders(self,loginFlag):
         self.driver.get(mobileEmulator)
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.WMS)).click()
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.WAREHOUSE)).click()
@@ -153,6 +170,12 @@ class MainWebDriver(object):
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.RELEASEDORDER)).click()
         sleep(1)
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.SALESORDER)).click()
+        self.state.changeState(self.IdentifyPage())
+        loginFlag[0] = True
+
+
+    def Exit(self):
+        self.driver.close()
 
     def IdentifyPage(self):
         mark = self.driver.find_element(By.XPATH, "/html/body/div/div/div[1]/div[2]/div[1]")
