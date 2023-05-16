@@ -48,11 +48,18 @@
         orientation: 'vertical'
         padding: [10,10,10,10]
         spacing: 10
-
-        Label:
-            text: 'Auto Picker'
-            font_size: 32
+        BoxLayout:
+            orientation: 'horizontal'
             size_hint_y: 0.1
+            padding: [10,10,10,10]
+            Label:
+            Label:
+                text: 'Auto Picker'
+                font_size: 32
+            Image:
+                id: status_image
+                source: 'StatusRed.png'
+                size: self.texture_size
         TextInput:
             id: order_input
             multiline: False

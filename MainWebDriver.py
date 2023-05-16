@@ -122,14 +122,14 @@ class MainWebDriver(object):
         WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(Elements.STATIONINPUT)).send_keys(station)
         sleep(1)
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NEXTORDERBUTTON)).click()
-        
+
     def Resync(self):
         self.driver.get(mobileEmulator)
         sleep(3)
         self.GetToOrders()
 
     # Will run the scanning/picking process for n orders in orderlist
-    def Scan(self,myOrders: list):
+    def Scan(self,myOrders: list,statusFlag):
         self.state.changeState(self.IdentifyPage())
         if(self.state.currentState != Elements.STAGEDICT["Select Order"]):
             self.Resync()
@@ -140,6 +140,7 @@ class MainWebDriver(object):
             WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.ORDERINPUT)).send_keys(order)
             WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.ENTERORDER)).click()
             self.Pick(order)
+        statusFlag[0] = True
         print("Scanning Complete \n Start Again\n")
 
     def Refresh(self):
@@ -147,7 +148,7 @@ class MainWebDriver(object):
         sleep(2)
         self.driver.find_element(By.XPATH, Elements.SALESORDERREFRESH).click()
     # Goes through the process of logging into microsoft and navigates to the list of active orders.
-    def login(self):
+    def login(self,loginFlag):
         self.driver.get(netsuiteSSO)
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.USERNAMEFIELD)).send_keys(Login.Username)
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NEXTBUTTON)).click()
@@ -155,9 +156,9 @@ class MainWebDriver(object):
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NEXTBUTTON)).click()
         WebDriverWait(self.driver, 50).until(EC.element_to_be_clickable(Elements.NOBUTTON)).click()
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.NETSUITE_ENVIRONMENT)).click()
-        self.GetToOrders()
+        self.GetToOrders(loginFlag)
 
-    def GetToOrders(self):
+    def GetToOrders(self,loginFlag):
         self.driver.get(mobileEmulator)
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.WMS)).click()
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.WAREHOUSE)).click()
@@ -170,6 +171,8 @@ class MainWebDriver(object):
         sleep(1)
         WebDriverWait(self.driver,50).until(EC.element_to_be_clickable(Elements.SALESORDER)).click()
         self.state.changeState(self.IdentifyPage())
+        loginFlag[0] = True
+
 
     def Exit(self):
         self.driver.close()
