@@ -64,6 +64,11 @@ class MainWebDriver(object):
 
     # The process of picking an individual order
     def pick(self, order):
+        """
+        Continually Crawls through individual picking of each item untill it detects
+        that the page is not NEXTPICKTASK, meaning all items are fullfilled and a packstation
+        is assigned based on whether the order is for Australia or New Zealand
+        """
         sleep(2)
         while True:
             sleep(1)
@@ -124,6 +129,9 @@ class MainWebDriver(object):
         ).click()
 
     def resync(self):
+        """
+        Re orients the driver to the start of the mobile emulator website
+        """
         self.driver.get(MOBILE_EMULATOR)
         sleep(3)
         self.GetToOrders()
@@ -147,12 +155,18 @@ class MainWebDriver(object):
         print("Scanning Complete \n Start Again\n")
 
     def refresh(self):
+        """
+        moves back and forth to avoid idle timeout,
+        not sure it actually works
+        """
         self.driver.find_element(By.XPATH, Elements.BACKBUTTONREFRESH).click()
         sleep(2)
         self.driver.find_element(By.XPATH, Elements.SALESORDERREFRESH).click()
 
-    # Goes through the process of logging into microsoft and navigates to the list of active orders.
     def login(self, login_flag=None):
+        """
+        Goes through the process of logging into microsoft and navigates to netsuite
+        """
         self.driver.get(NETSUITE_SSO)
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.USERNAMEFIELD)
@@ -175,6 +189,10 @@ class MainWebDriver(object):
         self.GetToOrders(login_flag)
 
     def GetToOrders(self, login_flag=None):
+        """
+        Navigates to the picking section of mobile emulator
+        and sets the login_flag to true indicating the login process is done.
+        """
         self.driver.get(MOBILE_EMULATOR)
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.WMS)
@@ -204,9 +222,15 @@ class MainWebDriver(object):
         login_flag[0] = True
 
     def exit(self):
+        """
+        closes the selenium driver
+        """
         self.driver.close()
 
     def identify_page(self):
+        """
+        returns the current page
+        """
         mark = self.driver.find_element(
             By.XPATH, "/html/body/div/div/div[1]/div[2]/div[1]"
         )
