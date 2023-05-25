@@ -5,6 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions
+from selenium.webdriver.common.alert import Alert
 from src import Elements, Login
 from src.state import State
 import threading
@@ -159,15 +160,27 @@ class MainWebDriver(object):
         moves back and forth to avoid idle timeout,
         not sure it actually works
         """
-        self.driver.find_element(By.XPATH, Elements.BACKBUTTONREFRESH).click()
+        self.driver.get(NETSUITE_SSO)
+        sleep(1)
+        alert = Alert(self.driver)
+        alert.accept()
+        sleep(5)
+        self.driver.get(MOBILE_EMULATOR)
         sleep(2)
-        self.driver.find_element(By.XPATH, Elements.SALESORDERREFRESH).click()
+        next_button = (By.XPATH, "/html/body/div/div/div[3]/button")
+        WebDriverWait(self.driver, 50).until(
+            EC.element_to_be_clickable(next_button)
+        ).click()
+        sleep(1)
+        self.GetToOrders(refresh_flag=True)
 
     def login(self, login_flag=None):
         """
         Goes through the process of logging into microsoft and navigates to netsuite
         """
+
         self.driver.get(NETSUITE_SSO)
+
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.USERNAMEFIELD)
         ).send_keys(Login.Username)
@@ -188,12 +201,13 @@ class MainWebDriver(object):
         ).click()
         self.GetToOrders(login_flag)
 
-    def GetToOrders(self, login_flag=None):
+    def GetToOrders(self, login_flag=None, refresh_flag=False):
         """
         Navigates to the picking section of mobile emulator
         and sets the login_flag to true indicating the login process is done.
         """
-        self.driver.get(MOBILE_EMULATOR)
+        if not refresh_flag:
+            self.driver.get(MOBILE_EMULATOR)
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.WMS)
         ).click()
@@ -218,7 +232,7 @@ class MainWebDriver(object):
         ).click()
         self.state.change_state(self.identify_page())
         if login_flag is None:
-            login_flag[0] = False
+            return
         login_flag[0] = True
 
     def exit(self):

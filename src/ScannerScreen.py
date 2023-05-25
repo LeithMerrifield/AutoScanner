@@ -5,7 +5,6 @@ import atexit
 import threading
 from time import sleep
 from functools import partial
-
 # fmt: off
 from kivy.core.window import Window  # pylint: disable=wrong-import-position,ungrouped-imports
 # fmt: on
@@ -96,6 +95,7 @@ class ScannerScreen(Screen):
             sleep(1)
         self.update_status(True)
         self.status_flag[0] = True
+        Clock.schedule_once(self.do_refresh, 600)
 
     def wait_for_status_change(self):
         """
