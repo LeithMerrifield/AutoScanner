@@ -155,11 +155,13 @@ class MainWebDriver(object):
         status_flag[0] = True
         print("Scanning Complete \n Start Again\n")
 
-    def refresh(self):
+    def refresh(self, status_flag=None):
         """
         moves back and forth to avoid idle timeout,
         not sure it actually works
         """
+
+        print("Refresh Started")
         self.driver.get(NETSUITE_SSO)
         sleep(1)
         alert = Alert(self.driver)
@@ -172,7 +174,7 @@ class MainWebDriver(object):
             EC.element_to_be_clickable(next_button)
         ).click()
         sleep(1)
-        self.GetToOrders(refresh_flag=True)
+        self.GetToOrders(login_flag=status_flag, refresh_flag=True)
 
     def login(self, login_flag=None):
         """

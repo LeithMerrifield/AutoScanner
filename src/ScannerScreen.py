@@ -95,7 +95,6 @@ class ScannerScreen(Screen):
         while self.login_screen.login_flag[0] is not True:
             sleep(1)
         self.update_status(True)
-        self.status_flag[0] = True
         Clock.schedule_once(self.do_refresh, 600)
 
     def wait_for_status_change(self):
@@ -117,6 +116,7 @@ class ScannerScreen(Screen):
         """
         Based on the passed in boolean it will schedule the update of the status_image.
         """
+        self.status_flag[0] = availability
         path = os.getcwd()
         available = path + "/src/images/StatusGreen.png"
         unavailable = path + "/src/images/StatusRed.png"
@@ -141,7 +141,6 @@ class ScannerScreen(Screen):
 
         Clock.unschedule(self.do_refresh)
         self.update_status(False)
-        self.status_flag[0] = False
 
         threading.Thread(
             target=self.driver.scan,
@@ -159,4 +158,10 @@ class ScannerScreen(Screen):
     # Create callback to change text
 
     def do_refresh(self, dt):
-        self.driver.refresh()
+        self.update_status(False)
+        threading.Thread(
+            target=self.driver.refresh,
+            args=(self.status_flag,),
+            daemon=True,
+        ).start()
+        threading.Thread(target=self.wait_for_status_change, daemon=True).start()
