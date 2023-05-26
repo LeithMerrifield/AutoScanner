@@ -3,6 +3,7 @@ from kivy.uix.screenmanager import Screen
 
 import atexit
 import threading
+import os
 from time import sleep
 from functools import partial
 # fmt: off
@@ -116,8 +117,9 @@ class ScannerScreen(Screen):
         """
         Based on the passed in boolean it will schedule the update of the status_image.
         """
-        available = "images/StatusGreen.png"
-        unavailable = "images/StatusRed.png"
+        path = os.getcwd()
+        available = path + "/src/images/StatusGreen.png"
+        unavailable = path + "/src/images/StatusRed.png"
 
         if availability:
             Clock.schedule_once(partial(self.schedule_image_update, available), 1)
