@@ -3,9 +3,9 @@ from kivy.uix.screenmanager import Screen
 
 import atexit
 import threading
+import os
 from time import sleep
 from functools import partial
-
 # fmt: off
 from kivy.core.window import Window  # pylint: disable=wrong-import-position,ungrouped-imports
 # fmt: on
@@ -72,7 +72,7 @@ class ScannerScreen(Screen):
                 order_label.text = input_box.text
 
             input_box.text = ""
-            Clock.schedule_once(self._show_keyboard)
+            Clock.schedule_once(self._show_keyboard, 1)
 
     def _show_keyboard(self, event):
         """
@@ -95,7 +95,7 @@ class ScannerScreen(Screen):
         while self.login_screen.login_flag[0] is not True:
             sleep(1)
         self.update_status(True)
-        self.status_flag[0] = True
+        Clock.schedule_once(self.do_refresh, 600)
 
     def wait_for_status_change(self):
         """
@@ -116,8 +116,10 @@ class ScannerScreen(Screen):
         """
         Based on the passed in boolean it will schedule the update of the status_image.
         """
-        available = "images/StatusGreen.png"
-        unavailable = "images/StatusRed.png"
+        self.status_flag[0] = availability
+        path = os.getcwd()
+        available = path + "/src/images/StatusGreen.png"
+        unavailable = path + "/src/images/StatusRed.png"
 
         if availability:
             Clock.schedule_once(partial(self.schedule_image_update, available), 1)
@@ -139,7 +141,6 @@ class ScannerScreen(Screen):
 
         Clock.unschedule(self.do_refresh)
         self.update_status(False)
-        self.status_flag[0] = False
 
         threading.Thread(
             target=self.driver.scan,
@@ -157,4 +158,11 @@ class ScannerScreen(Screen):
     # Create callback to change text
 
     def do_refresh(self, dt):
-        self.driver.refresh()
+        self.update_status(False)
+        threading.Thread(
+            target=self.driver.refresh,
+            args=(self.status_flag,),
+            daemon=True,
+        ).start()
+        threading.Thread(target=self.wait_for_status_change, daemon=True).start()
+        Clock.schedule_once(self.do_refresh, 600)

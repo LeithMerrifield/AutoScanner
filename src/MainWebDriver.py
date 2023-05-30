@@ -5,6 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions
+from selenium.webdriver.common.alert import Alert
 from src import Elements, Login
 from src.state import State
 import threading
@@ -41,7 +42,7 @@ class MainWebDriver(object):
     """
 
     def __init__(self) -> None:
-        threading.Thread(target=self.run_driver).start()
+        # threading.Thread(target=self.run_driver).start()
         self.order_list = []
         self.state = State()
 
@@ -154,32 +155,71 @@ class MainWebDriver(object):
         status_flag[0] = True
         print("Scanning Complete \n Start Again\n")
 
-    def refresh(self):
+    def refresh(self, status_flag=None):
         """
         moves back and forth to avoid idle timeout,
         not sure it actually works
         """
-        self.driver.find_element(By.XPATH, Elements.BACKBUTTONREFRESH).click()
+        print("Refresh Started")
+        self.driver.get(NETSUITE_SSO)
+        sleep(1)
+        alert = Alert(self.driver)
+        alert.accept()
+        sleep(5)
+        self.driver.get(MOBILE_EMULATOR)
         sleep(2)
-        self.driver.find_element(By.XPATH, Elements.SALESORDERREFRESH).click()
+        next_button = (By.XPATH, "/html/body/div/div/div[3]/button")
+        WebDriverWait(self.driver, 50).until(
+            EC.element_to_be_clickable(next_button)
+        ).click()
+        sleep(1)
+        self.GetToOrders(login_flag=status_flag, refresh_flag=True)
 
-    def login(self, login_flag=None):
+    def login(
+        self, login_flag=None, username=None, password=None, login_failed_callback=None
+    ):
         """
         Goes through the process of logging into microsoft and navigates to netsuite
         """
+        self.run_driver()
+        sleep(3)
         self.driver.get(NETSUITE_SSO)
+
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.USERNAMEFIELD)
-        ).send_keys(Login.Username)
+        ).send_keys(username)
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.NEXTBUTTON)
         ).click()
+        sleep(1)
+
+        try:
+            self.driver.find_element(By.ID, "usernameError")
+            self.exit()
+            login_failed_callback()
+            print("usernamError")
+            return
+        except Exception as e:
+            # means that the login passed
+            pass
+
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.PASSWORDFIELD)
-        ).send_keys(Login.Password)
+        ).send_keys(password)
+
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.NEXTBUTTON)
         ).click()
+
+        try:
+            self.driver.find_element(By.ID, "passwordError")
+            self.exit()
+            login_failed_callback()
+            print("pasaError")
+            return
+        except Exception as e:
+            pass
+
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.NOBUTTON)
         ).click()
@@ -188,12 +228,13 @@ class MainWebDriver(object):
         ).click()
         self.GetToOrders(login_flag)
 
-    def GetToOrders(self, login_flag=None):
+    def GetToOrders(self, login_flag=None, refresh_flag=False):
         """
         Navigates to the picking section of mobile emulator
         and sets the login_flag to true indicating the login process is done.
         """
-        self.driver.get(MOBILE_EMULATOR)
+        if not refresh_flag:
+            self.driver.get(MOBILE_EMULATOR)
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.WMS)
         ).click()
@@ -218,7 +259,7 @@ class MainWebDriver(object):
         ).click()
         self.state.change_state(self.identify_page())
         if login_flag is None:
-            login_flag[0] = False
+            return
         login_flag[0] = True
 
     def exit(self):
