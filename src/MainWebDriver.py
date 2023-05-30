@@ -233,27 +233,29 @@ class MainWebDriver(object):
         Navigates to the picking section of mobile emulator
         and sets the login_flag to true indicating the login process is done.
         """
+        sleep(2)
         if not refresh_flag:
             self.driver.get(MOBILE_EMULATOR)
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.WMS)
         ).click()
+        sleep(2)
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.WAREHOUSE)
         ).click()
-        sleep(1)
+        sleep(2)
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.PICKING)
         ).click()
-        sleep(1)
+        sleep(2)
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.SINGLEORDER)
         ).click()
-        sleep(1)
+        sleep(2)
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.RELEASEDORDER)
         ).click()
-        sleep(1)
+        sleep(2)
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.SALESORDER)
         ).click()
