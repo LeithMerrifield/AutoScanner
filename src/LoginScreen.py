@@ -1,8 +1,13 @@
 from src.MainWebDriver import MainWebDriver
 from kivy.config import Config
 from kivy.uix.screenmanager import Screen, SlideTransition
-
+from kivy.clock import Clock
+import Login
+import hashlib
 import threading
+import json
+import os
+from cryptography.fernet import Fernet
 
 Config.set("graphics", "resizeable", True)
 Config.set("graphics", "width", "500")
@@ -40,13 +45,77 @@ class LoginScreen(Screen):
     def __init__(self, **kw):
         super(LoginScreen, self).__init__(**kw)
         Window.bind(on_key_down=self._keydown)
+        self.check_users_on_launch()
+
+    def check_users_on_launch(self):
+        user = self.read_json()
+        if not user:
+            return
+        if user["remember"]:
+            self.ids.username.text = user["username"]
+            self.ids.password.text = self.decrypt_pass(
+                user["password"], user["encryption_key"]
+            )
+
+    def check_slide_transition(self, dt):
+        self.manager.current = "login"
+        self.ids.password.text = ""
+
+    def store_login(self, username=None, password=None):
+        if username == "" or password == "":
+            return
+        key = Fernet.generate_key()
+        fernet = Fernet(key)
+
+        login_object = {
+            "username": username,
+            "password": fernet.encrypt(password.encode()).decode(),
+            "encryption_key": key.decode(),
+            "remember": True,
+        }
+
+        with open("src\database.json", "w") as openfile:
+            json.dump(login_object, openfile, indent=4)
+
+    def reset_database(self):
+        default_object = {}
+        with open("src\database.json", "w") as openfile:
+            json.dump(default_object, openfile, indent=4)
+
+    def decrypt_pass(self, password, key):
+        fernet = Fernet(key)
+        return fernet.decrypt(password).decode()
+
+    def read_json(self):
+        with open("src\database.json", "r") as openfile:
+            json_object = json.load(openfile)
+
+        return json_object
 
     def do_login(self):
+        username = self.ids.username.text
+        password = self.ids.password.text
+        # if nothing need to store new login
+        if "@bollebrands.com" not in username.lower():
+            return
+
+        if self.ids.login_checkbox.active:
+            self.store_login(username, password)
+
         threading.Thread(
-            target=self.driver.login, args=(self.login_flag,), daemon=True
+            target=self.driver.login,
+            args=(self.login_flag, username, password, self.login_failed_callback),
+            daemon=True,
         ).start()
         self.manager.transition = SlideTransition(direction="left")
         self.manager.current = "scanner"
+
+    def login_failed_callback(self):
+        if self.ids.login_checkbox:
+            self.reset_database()
+        self.manager.transition = SlideTransition(direction="right")
+
+        Clock.schedule_once(self.check_slide_transition, 1)
 
     def _keydown(self, instance, keyboard, keycode, text, modifiers):
         if self.manager.current != "login":

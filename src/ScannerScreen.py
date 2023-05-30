@@ -72,7 +72,7 @@ class ScannerScreen(Screen):
                 order_label.text = input_box.text
 
             input_box.text = ""
-            Clock.schedule_once(self._show_keyboard)
+            Clock.schedule_once(self._show_keyboard, 1)
 
     def _show_keyboard(self, event):
         """
@@ -165,3 +165,4 @@ class ScannerScreen(Screen):
             daemon=True,
         ).start()
         threading.Thread(target=self.wait_for_status_change, daemon=True).start()
+        Clock.schedule_once(self.do_refresh, 600)

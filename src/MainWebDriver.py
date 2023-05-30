@@ -42,7 +42,7 @@ class MainWebDriver(object):
     """
 
     def __init__(self) -> None:
-        threading.Thread(target=self.run_driver).start()
+        # threading.Thread(target=self.run_driver).start()
         self.order_list = []
         self.state = State()
 
@@ -160,7 +160,6 @@ class MainWebDriver(object):
         moves back and forth to avoid idle timeout,
         not sure it actually works
         """
-
         print("Refresh Started")
         self.driver.get(NETSUITE_SSO)
         sleep(1)
@@ -176,25 +175,51 @@ class MainWebDriver(object):
         sleep(1)
         self.GetToOrders(login_flag=status_flag, refresh_flag=True)
 
-    def login(self, login_flag=None):
+    def login(
+        self, login_flag=None, username=None, password=None, login_failed_callback=None
+    ):
         """
         Goes through the process of logging into microsoft and navigates to netsuite
         """
-
+        self.run_driver()
+        sleep(3)
         self.driver.get(NETSUITE_SSO)
 
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.USERNAMEFIELD)
-        ).send_keys(Login.Username)
+        ).send_keys(username)
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.NEXTBUTTON)
         ).click()
+        sleep(1)
+
+        try:
+            self.driver.find_element(By.ID, "usernameError")
+            self.exit()
+            login_failed_callback()
+            print("usernamError")
+            return
+        except Exception as e:
+            # means that the login passed
+            pass
+
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.PASSWORDFIELD)
-        ).send_keys(Login.Password)
+        ).send_keys(password)
+
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.NEXTBUTTON)
         ).click()
+
+        try:
+            self.driver.find_element(By.ID, "passwordError")
+            self.exit()
+            login_failed_callback()
+            print("pasaError")
+            return
+        except Exception as e:
+            pass
+
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.NOBUTTON)
         ).click()
