@@ -12,7 +12,7 @@ import threading
 
 MOBILE_EMULATOR = "https://5230881.app.netsuite.com/app/site/hosting/scriptlet.nl?script=4662&deploy=1&compid=5230881"
 OFFICEURL = "https://www.office.com"
-NETSUITE_SSO = "https://account.activedirectory.windowsazure.com/applications/signin/3b7330ae-2893-492f-8157-09fecce53355?tenantId=7261aa19-728c-457c-bb6e-a31f9a21516d"
+NETSUITE_SSO = "https://launcher.myapps.microsoft.com/api/signin/fd4bc304-663f-4e7b-9245-93596454cc99?tenantId=7261aa19-728c-457c-bb6e-a31f9a21516d"
 MY_APPS_URL = "https://myapps.microsoft.com/"
 
 
@@ -223,6 +223,8 @@ class MainWebDriver(object):
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.NOBUTTON)
         ).click()
+        sleep(2)
+        # self.driver.get(NETSUITE_SSO)
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.NETSUITE_ENVIRONMENT)
         ).click()
