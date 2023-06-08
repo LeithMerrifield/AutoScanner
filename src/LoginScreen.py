@@ -2,11 +2,8 @@ from src.MainWebDriver import MainWebDriver
 from kivy.config import Config
 from kivy.uix.screenmanager import Screen, SlideTransition
 from kivy.clock import Clock
-import Login
-import hashlib
 import threading
 import json
-import os
 from cryptography.fernet import Fernet
 
 Config.set("graphics", "resizeable", True)
@@ -74,12 +71,12 @@ class LoginScreen(Screen):
             "remember": True,
         }
 
-        with open("src\database.json", "w") as openfile:
+        with open(r"src\database.json", "w") as openfile:
             json.dump(login_object, openfile, indent=4)
 
     def reset_database(self):
         default_object = {}
-        with open("src\database.json", "w") as openfile:
+        with open(r"src\database.json", "w") as openfile:
             json.dump(default_object, openfile, indent=4)
 
     def decrypt_pass(self, password, key):
@@ -87,7 +84,7 @@ class LoginScreen(Screen):
         return fernet.decrypt(password).decode()
 
     def read_json(self):
-        with open("src\database.json", "r") as openfile:
+        with open(r"src\database.json", "r") as openfile:
             json_object = json.load(openfile)
 
         return json_object
@@ -95,7 +92,7 @@ class LoginScreen(Screen):
     def do_login(self):
         username = self.ids.username.text
         password = self.ids.password.text
-        # if nothing need to store new login
+        # if nothing, need to store new login
         if "@bollebrands.com" not in username.lower():
             return
 

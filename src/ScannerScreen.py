@@ -95,7 +95,7 @@ class ScannerScreen(Screen):
         while self.login_screen.login_flag[0] is not True:
             sleep(1)
         self.update_status(True)
-        Clock.schedule_once(self.do_refresh, 600)
+        Clock.schedule_once(self.do_refresh, 1200)
 
     def wait_for_status_change(self):
         """
@@ -153,7 +153,7 @@ class ScannerScreen(Screen):
 
         threading.Thread(target=self.wait_for_status_change, daemon=True).start()
         self.ids.order_list.text = ""
-        Clock.schedule_once(self.do_refresh, 600)
+        Clock.schedule_once(self.do_refresh, 1200)
 
     # Create callback to change text
 
@@ -165,4 +165,4 @@ class ScannerScreen(Screen):
             daemon=True,
         ).start()
         threading.Thread(target=self.wait_for_status_change, daemon=True).start()
-        Clock.schedule_once(self.do_refresh, 600)
+        Clock.schedule_once(self.do_refresh, 1200)
