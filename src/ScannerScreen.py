@@ -41,6 +41,12 @@ class ScannerScreen(Screen):
         and create a list of each order number. This list will be passed to a created thread
         running MainWebDriver.scan(order_list) to initiate the scanning/picking process.
 
+    do_remove_all()
+        removes text from 'order_list' label
+
+    do_remove_last()
+        removes latest line of text from 'order_list' label
+
     do_refresh()
         initiates MainWebDriver.refresh() so that the website will be started again to circumvent
         idle timeout.
@@ -154,6 +160,21 @@ class ScannerScreen(Screen):
         threading.Thread(target=self.wait_for_status_change, daemon=True).start()
         self.ids.order_list.text = ""
         Clock.schedule_once(self.do_refresh, 1200)
+
+    def do_remove_all(self):
+        """
+        removes all text from the order label
+        """
+        self.ids.order_list.text = ""
+
+    def do_remove_last(self):
+        """
+        removes lastest entry in order label
+        """
+        orders = self.ids.order_list.text.split("\n")
+        orders = orders[:-1]
+        text = "\n".join(orders)
+        self.ids.order_list.text = text
 
     # Create callback to change text
 
