@@ -6,9 +6,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions
 from selenium.webdriver.common.alert import Alert
-from src import Elements, Login
+from src import Elements
 from src.state import State
-import threading
 
 MOBILE_EMULATOR = "https://5230881.app.netsuite.com/app/site/hosting/scriptlet.nl?script=4662&deploy=1&compid=5230881"
 OFFICEURL = "https://www.office.com"
