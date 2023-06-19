@@ -1,3 +1,9 @@
+import os
+import sys
+
+if hasattr(sys, "_MEIPASS"):
+    os.environ["KIVY_NO_CONSOLELOG"] = "1"
+
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
 from src.LoginScreen import LoginScreen

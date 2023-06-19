@@ -8,6 +8,13 @@ from selenium.common import exceptions
 from selenium.webdriver.common.alert import Alert
 from src import Elements
 from src.state import State
+from selenium.webdriver.chrome.service import (
+    Service as ChromeService,
+)  # Similar thing for firefox also!
+from subprocess import CREATE_NO_WINDOW  # This flag will only be available in windows
+
+chrome_service = ChromeService("chromedriver")
+chrome_service.creation_flags = CREATE_NO_WINDOW
 
 MOBILE_EMULATOR = "https://5230881.app.netsuite.com/app/site/hosting/scriptlet.nl?script=4662&deploy=1&compid=5230881"
 OFFICEURL = "https://www.office.com"
@@ -46,7 +53,7 @@ class MainWebDriver(object):
         self.state = State()
 
     def run_driver(self) -> None:
-        self.driver = webdriver.Chrome()
+        self.driver = webdriver.Chrome(service=chrome_service)
 
     def save_cookies(self) -> None:
         cookies = self.driver.get_cookies()
