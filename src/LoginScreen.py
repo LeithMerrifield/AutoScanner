@@ -5,6 +5,7 @@ from kivy.clock import Clock
 import threading
 import json
 from cryptography.fernet import Fernet
+import os as os
 
 Config.set("graphics", "resizeable", True)
 Config.set("graphics", "width", "500")
@@ -84,6 +85,9 @@ class LoginScreen(Screen):
         return fernet.decrypt(password).decode()
 
     def read_json(self):
+        if not os.path.exists(r"src\database.json"):
+            return None
+
         with open(r"src\database.json", "r") as openfile:
             json_object = json.load(openfile)
 
@@ -104,6 +108,7 @@ class LoginScreen(Screen):
             args=(self.login_flag, username, password, self.login_failed_callback),
             daemon=True,
         ).start()
+
         self.manager.transition = SlideTransition(direction="left")
         self.manager.current = "scanner"
 
