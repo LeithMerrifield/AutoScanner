@@ -84,10 +84,25 @@
             #background_color: 207/255, 240/255, 240/255, 1
             #valign: "top"
             #text_size: root.width, root.height
-        Button:
-            text: 'Pick'
-            size_hint_y: .1
-            on_press: root.do_pick()
+        BoxLayout:
+            orientation:'horizontal'
+            size_hint_y: 0.1
+            #padding: [10,10,10,10]
+            spacing: 10
+            Button:
+                text: 'Remove All'
+                size_hint_x: 0.25
+                on_press: root.do_remove_all()
+            Button:
+                text: 'Remove Last'
+                size_hint_x: 0.25
+                on_press: root.do_remove_last()
+            Label:
+                size_hint_x: 0.1
+            Button:
+                text: 'Pick'
+                on_press: root.do_pick()
+                size_hint_x: 0.4
 
 <BackgroundColor@Widget>:
     background_color: 1, 1, 1, 1
