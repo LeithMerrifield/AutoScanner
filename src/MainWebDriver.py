@@ -144,13 +144,23 @@ class MainWebDriver(object):
         self.GetToOrders()
 
     # Will run the scanning/picking process for n orders in order_list
-    def scan(self, my_orders: list, status_flag):
+    def scan(self, my_orders: list, status_flag, callback):
+        """
         self.state.change_state(self.identify_page())
         if self.state.current_state != Elements.STAGEDICT["Select Order"]:
             self.resync()
+        """
+
         my_orders.reverse()
-        for order in my_orders:
+
+        for idx, order in enumerate(my_orders):
             sleep(2)
+
+            my_orders[idx] = f"{order} - Started"
+            newlist = [e for e in my_orders]
+            newlist.reverse()
+            callback(order_list=newlist)
+
             WebDriverWait(self.driver, 50).until(
                 EC.element_to_be_clickable(Elements.ORDERINPUT)
             ).send_keys(order)
@@ -158,6 +168,12 @@ class MainWebDriver(object):
                 EC.element_to_be_clickable(Elements.ENTERORDER)
             ).click()
             self.pick(order)
+
+            my_orders[idx] = f"{order} - Complete"
+            newlist = [e for e in my_orders]
+            newlist.reverse()
+            callback(order_list=newlist)
+
         status_flag[0] = True
         print("Scanning Complete \n Start Again\n")
 
