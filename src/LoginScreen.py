@@ -119,6 +119,10 @@ class LoginScreen(Screen):
 
         Clock.schedule_once(self.check_slide_transition, 1)
 
+    def show_settings(self):
+        self.manager.transition = SlideTransition(direction="right")
+        self.manager.current = "settings"
+
     def _keydown(self, instance, keyboard, keycode, text, modifiers):
         if self.manager.current != "login":
             return

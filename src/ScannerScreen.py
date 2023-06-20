@@ -1,5 +1,5 @@
 from kivy.clock import Clock
-from kivy.uix.screenmanager import Screen
+from kivy.uix.screenmanager import Screen, SlideTransition
 
 import atexit
 import threading
@@ -58,6 +58,7 @@ class ScannerScreen(Screen):
         super(ScannerScreen, self).__init__(**kw)
         Window.bind(on_key_down=self._keydown)
         self.login_screen = manager.get_screen("login")
+        self.settings_screen = manager.get_screen("settings")
         self.driver = self.login_screen.driver
         atexit.register(self._exit_handler)
         threading.Thread(target=self.wait_for_login, daemon=True).start()
@@ -200,3 +201,8 @@ class ScannerScreen(Screen):
         ).start()
         threading.Thread(target=self.wait_for_status_change, daemon=True).start()
         Clock.schedule_once(self.do_refresh, 1200)
+
+    def show_settings(self):
+        self.settings_screen.set_previous_screen("scanner")
+        self.manager.transition = SlideTransition(direction="right")
+        self.manager.current = "settings"
