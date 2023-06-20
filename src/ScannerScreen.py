@@ -73,7 +73,8 @@ class ScannerScreen(Screen):
         if keycode == 40 and input_box.text != "":  # enter
             order_label = self.ids.order_list
             if order_label.text != "":
-                order_label.text = order_label.text + "\n" + input_box.text
+                if not input_box.text in order_label.text:
+                    order_label.text = order_label.text + "\n" + input_box.text
             else:
                 order_label.text = input_box.text
 
