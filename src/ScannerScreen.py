@@ -69,16 +69,25 @@ class ScannerScreen(Screen):
         """
         if self.manager.current != "scanner":
             return
-        input_box = self.ids.order_input
-        if keycode == 40 and input_box.text != "":  # enter
-            order_label = self.ids.order_list
-            if order_label.text != "":
-                order_label.text = order_label.text + "\n" + input_box.text
-            else:
-                order_label.text = input_box.text
 
-            input_box.text = ""
-            Clock.schedule_once(self._show_keyboard, 1)
+        input_box = self.ids.order_input
+
+        if keycode == 40 and input_box.text != "":
+            self.add_order_to_list()
+
+    def add_order_to_list(self):
+        input_box = self.ids.order_input
+
+        order_label = self.ids.order_list
+
+        if order_label.text != "":
+            if not input_box.text in order_label.text:
+                order_label.text = order_label.text + "\n" + input_box.text
+        else:
+            order_label.text = input_box.text
+
+        input_box.text = ""
+        Clock.schedule_once(self._show_keyboard, 1)
 
     def _show_keyboard(self, event):
         """
@@ -110,6 +119,7 @@ class ScannerScreen(Screen):
         """
         while self.status_flag[0] is not True:
             sleep(1)
+        self.ids.order_list.text = ""
         self.update_status(True)
 
     def schedule_image_update(self, source, *largs):
@@ -153,12 +163,13 @@ class ScannerScreen(Screen):
             args=(
                 self.ids.order_list.text.split("\n"),
                 self.status_flag,
+                self.order_callback,
             ),
             daemon=True,
         ).start()
 
         threading.Thread(target=self.wait_for_status_change, daemon=True).start()
-        self.ids.order_list.text = ""
+        # self.ids.order_list.text = ""
         Clock.schedule_once(self.do_refresh, 1200)
 
     def do_remove_all(self):
@@ -176,7 +187,9 @@ class ScannerScreen(Screen):
         text = "\n".join(orders)
         self.ids.order_list.text = text
 
-    # Create callback to change text
+    def order_callback(self, order_list):
+        self.ids.order_list.text = "\n".join(order_list)
+        return
 
     def do_refresh(self, dt):
         self.update_status(False)

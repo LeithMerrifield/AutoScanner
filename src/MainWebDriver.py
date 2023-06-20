@@ -8,10 +8,18 @@ from selenium.common import exceptions
 from selenium.webdriver.common.alert import Alert
 from src import Elements
 from src.state import State
+from selenium.webdriver.chrome.service import (
+    Service as ChromeService,
+)  # Similar thing for firefox also!
+from subprocess import CREATE_NO_WINDOW  # This flag will only be available in windows
+import os as os
+import json
+
+chrome_service = ChromeService("chromedriver")
+chrome_service.creation_flags = CREATE_NO_WINDOW
 
 MOBILE_EMULATOR = "https://5230881.app.netsuite.com/app/site/hosting/scriptlet.nl?script=4662&deploy=1&compid=5230881"
 OFFICEURL = "https://www.office.com"
-NETSUITE_SSO = "https://launcher.myapps.microsoft.com/api/signin/fd4bc304-663f-4e7b-9245-93596454cc99?tenantId=7261aa19-728c-457c-bb6e-a31f9a21516d"
 MY_APPS_URL = "https://myapps.microsoft.com/"
 
 
@@ -45,8 +53,21 @@ class MainWebDriver(object):
         self.order_list = []
         self.state = State()
 
+        links_object = self.read_links()
+        if links_object is None:
+            raise Exception("Missing links.json in the source folder.")
+        self.netsuite_sso = links_object["Netsuite_SSO"]
+
+    def read_links(self):
+        if not os.path.exists(r"src\database.json"):
+            return None
+
+        with open(r".\src\links.json", "r") as openfile:
+            json_object = json.load(openfile)
+        return json_object
+
     def run_driver(self) -> None:
-        self.driver = webdriver.Chrome()
+        self.driver = webdriver.Chrome(service=chrome_service)
 
     def save_cookies(self) -> None:
         cookies = self.driver.get_cookies()
@@ -137,13 +158,23 @@ class MainWebDriver(object):
         self.GetToOrders()
 
     # Will run the scanning/picking process for n orders in order_list
-    def scan(self, my_orders: list, status_flag):
+    def scan(self, my_orders: list, status_flag, callback):
+        """
         self.state.change_state(self.identify_page())
         if self.state.current_state != Elements.STAGEDICT["Select Order"]:
             self.resync()
+        """
+
         my_orders.reverse()
-        for order in my_orders:
+
+        for idx, order in enumerate(my_orders):
             sleep(2)
+
+            my_orders[idx] = f"{order} - Started"
+            newlist = [e for e in my_orders]
+            newlist.reverse()
+            callback(order_list=newlist)
+
             WebDriverWait(self.driver, 50).until(
                 EC.element_to_be_clickable(Elements.ORDERINPUT)
             ).send_keys(order)
@@ -151,6 +182,12 @@ class MainWebDriver(object):
                 EC.element_to_be_clickable(Elements.ENTERORDER)
             ).click()
             self.pick(order)
+
+            my_orders[idx] = f"{order} - Complete"
+            newlist = [e for e in my_orders]
+            newlist.reverse()
+            callback(order_list=newlist)
+
         status_flag[0] = True
         print("Scanning Complete \n Start Again\n")
 
@@ -160,7 +197,7 @@ class MainWebDriver(object):
         not sure it actually works
         """
         print("Refresh Started")
-        self.driver.get(NETSUITE_SSO)
+        self.driver.get(self.netsuite_sso)
         sleep(1)
         alert = Alert(self.driver)
         alert.accept()
@@ -182,7 +219,7 @@ class MainWebDriver(object):
         """
         self.run_driver()
         sleep(3)
-        self.driver.get(NETSUITE_SSO)
+        self.driver.get(self.netsuite_sso)
 
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.USERNAMEFIELD)
