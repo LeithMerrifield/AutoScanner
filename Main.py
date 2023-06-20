@@ -17,6 +17,8 @@ Builder.load_file("./src/kv/Login.kv")
 class LoginApp(App):
     def build(self):
         self.path = os.getcwd()
+        self.icon = "./src/images/FireIcon.png"
+        self.title = "AutoScanner"
         manager = ScreenManager()
         manager.add_widget(LoginScreen(name="login"))
         manager.add_widget(ScannerScreen(name="scanner", manager=manager))
