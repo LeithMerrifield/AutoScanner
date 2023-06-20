@@ -5,7 +5,7 @@ from kivy.clock import Clock
 import threading
 import json
 from cryptography.fernet import Fernet
-import os as os
+import os
 
 Config.set("graphics", "resizeable", True)
 Config.set("graphics", "width", "500")

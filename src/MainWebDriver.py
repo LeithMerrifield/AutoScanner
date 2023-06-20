@@ -1,4 +1,3 @@
-import pickle
 from time import sleep
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
@@ -52,7 +51,7 @@ class MainWebDriver(object):
         # threading.Thread(target=self.run_driver).start()
         self.order_list = []
         self.state = State()
-
+        self.driver = None
         links_object = self.read_links()
         if links_object is None:
             raise Exception("Missing links.json in the source folder.")
@@ -68,20 +67,6 @@ class MainWebDriver(object):
 
     def run_driver(self) -> None:
         self.driver = webdriver.Chrome(service=chrome_service)
-
-    def save_cookies(self) -> None:
-        cookies = self.driver.get_cookies()
-        pickle.dump(cookies, open(self.cookiePath, "wb"))
-
-    def load_cookies(self) -> None:
-        cookies = pickle.load(open("cookies.pkl", "rb"))
-        for cookie in cookies:
-            try:
-                cookie["domain"] = ".microsoftonline.com"
-                print(cookie["domain"])
-                self.driver.add_cookie(cookie)
-            except exceptions.InvalidCookieDomainException as e:
-                print(e.msg)
 
     # The process of picking an individual order
     def pick(self, order):
@@ -306,7 +291,8 @@ class MainWebDriver(object):
         """
         closes the selenium driver
         """
-        self.driver.close()
+        if self.driver is not None:
+            self.driver.close()
 
     def identify_page(self):
         """

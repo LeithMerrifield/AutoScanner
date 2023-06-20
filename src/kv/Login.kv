@@ -129,11 +129,49 @@
     BoxLayout:
         id: settings_layout
         orientation: 'vertical'
+        padding: [10,10,10,10]
+        spacing: 10
         Label:
-            text: "Settings"
+            text: 'Settings'
+
+        BoxLayout:
+            orientation: 'horizontal'
+            Label:
+                text: "Setting 1"
+            TextInput:
+
+        BoxLayout:
+            orientation: 'horizontal'
+            Label:
+                text: "Setting 2"
+                size_hint_x: .7
+            TextInput:
+                size_hint_y: .5
+
+        BoxLayout:
+            orientation: 'horizontal'
+            Label:
+                text: "Setting 3"
+            TextInput:
+
+        BoxLayout:
+            orientation: 'horizontal'
+            Label:
+                text: "Setting 4"
+            TextInput:
+
+        BoxLayout:
+            orientation: 'horizontal'
+            Label:
+                text: "Setting 5"
+            TextInput:
+
         Button:
             text: "Save"
             on_press: root.save_and_return()
+
+
+
 <BackgroundColor@Widget>:
     background_color: 1, 1, 1, 1
     canvas.before:
