@@ -1,4 +1,3 @@
-import pickle
 from time import sleep
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
@@ -14,6 +13,10 @@ from selenium.webdriver.chrome.service import (
 from subprocess import CREATE_NO_WINDOW  # This flag will only be available in windows
 import os as os
 import json
+from kivy.clock import Clock
+from kivy.uix.popup import Popup
+from kivy.uix.label import Label
+from functools import partial
 
 chrome_service = ChromeService("chromedriver")
 chrome_service.creation_flags = CREATE_NO_WINDOW
@@ -52,36 +55,18 @@ class MainWebDriver(object):
         # threading.Thread(target=self.run_driver).start()
         self.order_list = []
         self.state = State()
-
-        links_object = self.read_links()
-        if links_object is None:
-            raise Exception("Missing links.json in the source folder.")
-        self.netsuite_sso = links_object["Netsuite_SSO"]
+        self.driver = None
 
     def read_links(self):
         if not os.path.exists(r"src\database.json"):
             return None
 
-        with open(r".\src\links.json", "r") as openfile:
+        with open(r".\src\settings.json", "r") as openfile:
             json_object = json.load(openfile)
         return json_object
 
     def run_driver(self) -> None:
         self.driver = webdriver.Chrome(service=chrome_service)
-
-    def save_cookies(self) -> None:
-        cookies = self.driver.get_cookies()
-        pickle.dump(cookies, open(self.cookiePath, "wb"))
-
-    def load_cookies(self) -> None:
-        cookies = pickle.load(open("cookies.pkl", "rb"))
-        for cookie in cookies:
-            try:
-                cookie["domain"] = ".microsoftonline.com"
-                print(cookie["domain"])
-                self.driver.add_cookie(cookie)
-            except exceptions.InvalidCookieDomainException as e:
-                print(e.msg)
 
     # The process of picking an individual order
     def pick(self, order):
@@ -217,9 +202,43 @@ class MainWebDriver(object):
         """
         Goes through the process of logging into microsoft and navigates to netsuite
         """
+        links_object = self.read_links()
+
+        if links_object is None:
+            raise Exception("Missing settings.json in the source folder.")
+
+        self.netsuite_sso = links_object["Netsuite_SSO"]
         self.run_driver()
         sleep(3)
-        self.driver.get(self.netsuite_sso)
+
+        try:
+            self.driver.get(self.netsuite_sso)
+        except:
+            self.exit()
+            login_failed_callback()
+            Clock.schedule_once(
+                partial(
+                    self.test_popup,
+                    "SSO Issue",
+                    "You need to set the Netsuite SSO link in the settings menu",
+                ),
+                1,
+            )
+            return
+
+        if "login.microsoftonline.com" not in self.driver.current_url:
+            login_failed_callback()
+            Clock.schedule_once(
+                partial(
+                    self.test_popup,
+                    "SSO Issue",
+                    "You need to set the Netsuite SSO link in the settings menu",
+                ),
+                1,
+            )
+            self.exit()
+            login_failed_callback()
+            return
 
         WebDriverWait(self.driver, 50).until(
             EC.element_to_be_clickable(Elements.USERNAMEFIELD)
@@ -232,8 +251,15 @@ class MainWebDriver(object):
         try:
             self.driver.find_element(By.ID, "usernameError")
             self.exit()
-            login_failed_callback()
-            print("usernamError")
+            login_failed_callback(error_code=1)
+            Clock.schedule_once(
+                partial(
+                    self.test_popup,
+                    "Login Issue",
+                    "Your username was entered incorrectly",
+                ),
+                1,
+            )
             return
         except Exception as e:
             # means that the login passed
@@ -250,8 +276,15 @@ class MainWebDriver(object):
         try:
             self.driver.find_element(By.ID, "passwordError")
             self.exit()
-            login_failed_callback()
-            print("pasaError")
+            login_failed_callback(error_code=2)
+            Clock.schedule_once(
+                partial(
+                    self.test_popup,
+                    "Login Issue",
+                    "Your password was entered incorrectly",
+                ),
+                1,
+            )
             return
         except Exception as e:
             pass
@@ -302,11 +335,21 @@ class MainWebDriver(object):
             return
         login_flag[0] = True
 
+    def test_popup(self, title, content_text, dt):
+        popup = Popup(
+            title=title,
+            content=Label(text=content_text),
+            size_hint=(None, None),
+            size=(450, 200),
+        )
+        popup.open()
+
     def exit(self):
         """
         closes the selenium driver
         """
-        self.driver.close()
+        if self.driver is not None:
+            self.driver.close()
 
     def identify_page(self):
         """

@@ -5,19 +5,32 @@
         orientation: 'vertical'
         padding: [10,10,10,10]
         spacing: 10
-        Label:
-            text: 'Username'
-            font_size: 28
-            color: (1,1,1)
-            #text_size: root.width-20, 20
+        BoxLayout:
+            orientation: 'horizontal'
             size_hint_y: .1
+            padding: [10,10,10,10]
+            spacing: 10
+            Button:
+                text: 'Settings'
+                size_hint_x: .2
+                on_press: root.show_settings()
+            Label:
+                text: 'Username'
+                font_size: 28
+                color: (1,1,1)
+                size_hint_x: .6
+                #text_size: root.width-20, 20
+            Label:
+                size_hint_x: .2
 
         TextInput:
             id: username
             multiline:False
             font_size: 28
             write_tab:False
-            size_hint_y: .2
+            size_hint_y: .1
+        Label:
+            size_hint_y: .05
 
         Label:
             text: 'Password'
@@ -33,6 +46,8 @@
             write_tab:False
             password:True
             font_size: 28
+            size_hint_y: .1
+        Label:
             size_hint_y: .2
 
         BoxLayout:
@@ -45,7 +60,7 @@
                 font_size: 24
             CheckBox:
                 id: login_checkbox
-                active: False
+                active: True
         Button:
             text: 'Login'
             font_size: 24
@@ -63,7 +78,13 @@
             orientation: 'horizontal'
             size_hint_y: 0.1
             padding: [10,10,10,10]
+            spacing: 10
+            Button:
+                text: 'Settings'
+                size_hint_x : .5
+                on_press: root.show_settings()
             Label:
+                size_hint_x : .4
             Label:
                 text: 'Auto Picker'
                 font_size: 32
@@ -103,6 +124,59 @@
                 text: 'Pick'
                 on_press: root.do_pick()
                 size_hint_x: 0.4
+
+<SettingsScreen>:
+    BoxLayout:
+        id: settings_layout
+        orientation: 'vertical'
+        padding: [10,10,10,10]
+        spacing: 10
+        Label:
+            text: 'Settings'
+
+        BoxLayout:
+            orientation:'horizontal'
+            Label:
+                text: "Netsuite SSO"
+                size_hint_x: .7
+            SettingTextInput:
+                id: netsuite_sso_setting
+
+        BoxLayout:
+            orientation: 'horizontal'
+            Label:
+                text: "Setting 2"
+                size_hint_x: .7
+            SettingTextInput:
+
+        BoxLayout:
+            orientation: 'horizontal'
+            Label:
+                text: "Setting 3"
+                size_hint_x: .7
+            SettingTextInput:
+
+        BoxLayout:
+            orientation: 'horizontal'
+            Label:
+                text: "Setting 4"
+                size_hint_x: .7
+            SettingTextInput:
+
+        BoxLayout:
+            orientation: 'horizontal'
+            Label:
+                text: "Setting 5"
+                size_hint_x: .7
+            SettingTextInput:
+
+        Button:
+            text: "Save"
+            on_press: root.save_and_return()
+
+<SettingTextInput@TextInput>:
+    size_hint_y: .5
+    pos_hint: {'center_x':1, 'center_y':0.5}
 
 <BackgroundColor@Widget>:
     background_color: 1, 1, 1, 1
