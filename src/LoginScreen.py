@@ -2,10 +2,11 @@ from src.MainWebDriver import MainWebDriver
 from kivy.config import Config
 from kivy.uix.screenmanager import Screen, SlideTransition
 from kivy.clock import Clock
-import threading
 import json
 from cryptography.fernet import Fernet
 import os
+import threading
+from functools import partial
 
 Config.set("graphics", "resizeable", True)
 Config.set("graphics", "width", "500")
@@ -55,9 +56,13 @@ class LoginScreen(Screen):
                 user["password"], user["encryption_key"]
             )
 
-    def check_slide_transition(self, dt):
+    def transition_to_login(self, error_code, dt):
+        if error_code == 1 or error_code == 2:
+            self.ids.username.text = ""
+            self.ids.password.text = ""
+            self.reset_database()
+
         self.manager.current = "login"
-        self.ids.password.text = ""
 
     def store_login(self, username=None, password=None):
         if username == "" or password == "":
@@ -97,7 +102,7 @@ class LoginScreen(Screen):
         username = self.ids.username.text
         password = self.ids.password.text
         # if nothing, need to store new login
-        if "@bollebrands.com" not in username.lower():
+        if "@bollebrands.com" not in username.lower() or password == "":
             return
 
         if self.ids.login_checkbox.active:
@@ -112,12 +117,16 @@ class LoginScreen(Screen):
         self.manager.transition = SlideTransition(direction="left")
         self.manager.current = "scanner"
 
-    def login_failed_callback(self):
-        if self.ids.login_checkbox:
-            self.reset_database()
+    def login_failed_callback(self, error_code=0):
         self.manager.transition = SlideTransition(direction="right")
-
-        Clock.schedule_once(self.check_slide_transition, 1)
+        Clock.schedule_once(
+            partial(
+                self.transition_to_login,
+                error_code,
+            ),
+            1,
+        )
+        # self.manager.current = "login"
 
     def show_settings(self):
         self.manager.transition = SlideTransition(direction="right")

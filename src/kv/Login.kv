@@ -60,7 +60,7 @@
                 font_size: 24
             CheckBox:
                 id: login_checkbox
-                active: False
+                active: True
         Button:
             text: 'Login'
             font_size: 24
@@ -135,42 +135,48 @@
             text: 'Settings'
 
         BoxLayout:
-            orientation: 'horizontal'
+            orientation:'horizontal'
             Label:
-                text: "Setting 1"
-            TextInput:
+                text: "Netsuite SSO"
+                size_hint_x: .7
+            SettingTextInput:
+                id: netsuite_sso_setting
 
         BoxLayout:
             orientation: 'horizontal'
             Label:
                 text: "Setting 2"
                 size_hint_x: .7
-            TextInput:
-                size_hint_y: .5
+            SettingTextInput:
 
         BoxLayout:
             orientation: 'horizontal'
             Label:
                 text: "Setting 3"
-            TextInput:
+                size_hint_x: .7
+            SettingTextInput:
 
         BoxLayout:
             orientation: 'horizontal'
             Label:
                 text: "Setting 4"
-            TextInput:
+                size_hint_x: .7
+            SettingTextInput:
 
         BoxLayout:
             orientation: 'horizontal'
             Label:
                 text: "Setting 5"
-            TextInput:
+                size_hint_x: .7
+            SettingTextInput:
 
         Button:
             text: "Save"
             on_press: root.save_and_return()
 
-
+<SettingTextInput@TextInput>:
+    size_hint_y: .5
+    pos_hint: {'center_x':1, 'center_y':0.5}
 
 <BackgroundColor@Widget>:
     background_color: 1, 1, 1, 1
