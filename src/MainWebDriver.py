@@ -19,12 +19,11 @@ from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from functools import partial
 
-chrome_service = ChromeService("chromedriver")
-chrome_service.creation_flags = CREATE_NO_WINDOW
 
 MOBILE_EMULATOR = "https://5230881.app.netsuite.com/app/site/hosting/scriptlet.nl?script=4662&deploy=1&compid=5230881"
 OFFICEURL = "https://www.office.com"
 MY_APPS_URL = "https://myapps.microsoft.com/"
+TIMOUT = 20
 
 
 class MainWebDriver(object):
@@ -66,8 +65,14 @@ class MainWebDriver(object):
             json_object = json.load(openfile)
         return json_object
 
-    def run_driver(self) -> None:
-        self.driver = webdriver.Chrome(service=chrome_service)
+    def run_driver(self, chrome_service, manual_flag) -> None:
+        if manual_flag:
+            service = ChromeService(
+                executable_path=chrome_service
+            )  # used to specify chrome driver
+            self.driver = webdriver.Chrome(service=service)
+        else:
+            self.driver = webdriver.Chrome(service=chrome_service)
 
     # The process of picking an individual order
     def pick(self, order):
@@ -80,20 +85,20 @@ class MainWebDriver(object):
         try:
             while True:
                 sleep(1)
-                WebDriverWait(self.driver, 10).until(
+                WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.FIRSTENTRY)
                 ).click()
                 sleep(1)
-                WebDriverWait(self.driver, 10).until(
+                WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.BINNUMBER)
                 ).click()
                 sleep(1)
-                WebDriverWait(self.driver, 10).until(
+                WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.ITEMNUMBER)
                 ).click()
                 sleep(3)
 
-                WebDriverWait(self.driver, 10).until(
+                WebDriverWait(self.driver, TIMOUT).until(
                     EC.presence_of_element_located(Elements.QUANTITY)
                 )
                 amount = self.driver.find_element(
@@ -101,7 +106,7 @@ class MainWebDriver(object):
                     "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]/span",
                 ).text.split(" ")[0]
                 amount += "\n"
-                WebDriverWait(self.driver, 10).until(
+                WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.QUANTITYINPUT)
                 ).send_keys(amount)
                 sleep(3)
@@ -113,7 +118,7 @@ class MainWebDriver(object):
                 print(mark.text.lower() + " : " + "Pick Task Complete".lower())
 
                 if mark.text.lower() == "Pick Task Complete".lower():
-                    WebDriverWait(self.driver, 10).until(
+                    WebDriverWait(self.driver, TIMOUT).until(
                         EC.element_to_be_clickable(Elements.NEXTPICKTASK)
                     ).click()
                 else:
@@ -126,13 +131,13 @@ class MainWebDriver(object):
             else:
                 station = "PackStation02\n"
 
-            WebDriverWait(self.driver, 5).until(
+            WebDriverWait(self.driver, TIMOUT).until(
                 EC.element_to_be_clickable(Elements.STATIONINPUT)
             ).send_keys(station)
 
             sleep(1)
 
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, TIMOUT).until(
                 EC.element_to_be_clickable(Elements.NEXTORDERBUTTON)
             ).click()
         except exceptions.NoSuchWindowException:
@@ -180,7 +185,7 @@ class MainWebDriver(object):
                     WebDriverWait(self.driver, 2).until(
                         EC.element_to_be_clickable(Elements.ORDERINPUTWITHERROR)
                     ).send_keys(order)
-                WebDriverWait(self.driver, 10).until(
+                WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.ENTERORDER)
                 ).click()
 
@@ -250,7 +255,29 @@ class MainWebDriver(object):
             raise Exception("Missing settings.json in the source folder.")
 
         self.netsuite_sso = links_object["Netsuite_SSO"]
-        self.run_driver()
+
+        chrome_service = ChromeService("chromedriver")
+        chrome_service.creation_flags = CREATE_NO_WINDOW
+
+        try:
+            if links_object["Chrome_Driver"][1]:
+                chrome_service = links_object["Chrome_Driver"][0]
+                self.run_driver(chrome_service, True)
+            else:
+                self.run_driver(chrome_service, False)
+        except exceptions.SessionNotCreatedException:
+            login_failed_callback()
+            Clock.schedule_once(
+                partial(
+                    self.test_popup,
+                    "Chrome Driver Issue",
+                    "  You need to disable the manual override.\n"
+                    + "                   If the issue persists\n"
+                    + "Update and manually set the chrome driver.",
+                ),
+                1,
+            )
+            return
         sleep(3)
 
         try:
@@ -292,10 +319,10 @@ class MainWebDriver(object):
             return
         # overall try will check for if the driver closes
         try:
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, TIMOUT).until(
                 EC.element_to_be_clickable(Elements.USERNAMEFIELD)
             ).send_keys(username)
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, TIMOUT).until(
                 EC.element_to_be_clickable(Elements.NEXTBUTTON)
             ).click()
             sleep(1)
@@ -317,11 +344,11 @@ class MainWebDriver(object):
                 # means that the login passed
                 pass
 
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, TIMOUT).until(
                 EC.element_to_be_clickable(Elements.PASSWORDFIELD)
             ).send_keys(password)
 
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, TIMOUT).until(
                 EC.element_to_be_clickable(Elements.NEXTBUTTON)
             ).click()
 
@@ -341,12 +368,12 @@ class MainWebDriver(object):
             except Exception as e:
                 pass
 
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, TIMOUT).until(
                 EC.element_to_be_clickable(Elements.NOBUTTON)
             ).click()
             sleep(2)
             # self.driver.get(NETSUITE_SSO)
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, TIMOUT).until(
                 EC.element_to_be_clickable(Elements.NETSUITE_ENVIRONMENT)
             ).click()
             self.get_to_orders(login_flag)
@@ -374,27 +401,27 @@ class MainWebDriver(object):
         sleep(2)
         if not refresh_flag:
             self.driver.get(MOBILE_EMULATOR)
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.WMS)
         ).click()
         sleep(2)
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.WAREHOUSE)
         ).click()
         sleep(2)
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.PICKING)
         ).click()
         sleep(2)
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.SINGLEORDER)
         ).click()
         sleep(2)
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.RELEASEDORDER)
         ).click()
         sleep(2)
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.SALESORDER)
         ).click()
 
