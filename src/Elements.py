@@ -22,6 +22,10 @@ ORDERINPUT = (
     By.XPATH,
     "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]/div[2]/input",
 )
+ORDERINPUTWITHERROR = (
+    By.XPATH,
+    "/html/body/div/div/div[2]/div[2]/div/div[1]/div[3]/div[1]/div[2]/input",
+)
 ENTERORDER = (
     By.XPATH,
     "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div[3]/button",

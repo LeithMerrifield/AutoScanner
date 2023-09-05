@@ -3,7 +3,8 @@ from kivy.uix.screenmanager import Screen, SlideTransition
 
 import atexit
 import threading
-import os
+import os as os
+import json
 from time import sleep
 from functools import partial
 # fmt: off
@@ -111,6 +112,8 @@ class ScannerScreen(Screen):
         while self.login_screen.login_flag[0] is not True:
             sleep(1)
         self.update_status(True)
+        # in the event that we need to do the login process again reset login_flag to false
+        self.login_screen.login_flag[0] = False
         Clock.schedule_once(self.do_refresh, 1200)
 
     def wait_for_status_change(self):
@@ -153,7 +156,7 @@ class ScannerScreen(Screen):
         proccess is done
 
         """
-        if not self.status_flag[0] and self.ids.order_list.text != "":
+        if not self.status_flag[0] or self.ids.order_list.text == "":
             return
 
         Clock.unschedule(self.do_refresh)
@@ -165,6 +168,7 @@ class ScannerScreen(Screen):
                 self.ids.order_list.text.split("\n"),
                 self.status_flag,
                 self.order_callback,
+                self.login_callback,
             ),
             daemon=True,
         ).start()
@@ -193,10 +197,14 @@ class ScannerScreen(Screen):
         return
 
     def do_refresh(self, dt):
+        settings = self.read_links()
+        if not settings["Timeout_Avoidance"]:
+            Clock.schedule_once(self.do_refresh, 1200)
+            return
         self.update_status(False)
         threading.Thread(
             target=self.driver.refresh,
-            args=(self.status_flag,),
+            args=(self.status_flag, self.login_callback),
             daemon=True,
         ).start()
         threading.Thread(target=self.wait_for_status_change, daemon=True).start()
@@ -206,3 +214,36 @@ class ScannerScreen(Screen):
         self.settings_screen.set_previous_screen("scanner")
         self.manager.transition = SlideTransition(direction="right")
         self.manager.current = "settings"
+
+    def transition_to_login(self, error_code, dt):
+        if error_code == 3:
+            self.ids.order_list.text = ""
+            self.update_status(True)
+        self.update_status(False)
+        threading.Thread(target=self.wait_for_login, daemon=True).start()
+        self.manager.current = "login"
+
+    def login_callback(self, error_code=0):
+        """
+        Error Codes:
+        1
+        2
+        3 - No driver window when gone to pick, wipes order_list and resets status
+        """
+        self.manager.transition = SlideTransition(direction="right")
+        Clock.schedule_once(
+            partial(
+                self.transition_to_login,
+                error_code,
+            ),
+            1,
+        )
+
+    def read_links(self):
+        if not os.path.exists(r"src\settings.json"):
+            return None
+
+        with open(r".\src\settings.json", "r") as openfile:
+            json_object = json.load(openfile)
+            openfile.close()
+        return json_object

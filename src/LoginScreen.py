@@ -56,14 +56,6 @@ class LoginScreen(Screen):
                 user["password"], user["encryption_key"]
             )
 
-    def transition_to_login(self, error_code, dt):
-        if error_code == 1 or error_code == 2:
-            self.ids.username.text = ""
-            self.ids.password.text = ""
-            self.reset_database()
-
-        self.manager.current = "login"
-
     def store_login(self, username=None, password=None):
         if username == "" or password == "":
             return
@@ -117,6 +109,14 @@ class LoginScreen(Screen):
         self.manager.transition = SlideTransition(direction="left")
         self.manager.current = "scanner"
 
+    def transition_to_login(self, error_code, dt):
+        if error_code == 1 or error_code == 2:
+            self.ids.username.text = ""
+            self.ids.password.text = ""
+            self.reset_database()
+
+        self.manager.current = "login"
+
     def login_failed_callback(self, error_code=0):
         self.manager.transition = SlideTransition(direction="right")
         Clock.schedule_once(
@@ -126,7 +126,6 @@ class LoginScreen(Screen):
             ),
             1,
         )
-        # self.manager.current = "login"
 
     def show_settings(self):
         self.manager.transition = SlideTransition(direction="right")

@@ -11,7 +11,14 @@ class SettingsScreen(Screen):
 
     def save_and_return(self):
         self.netsuite_sso = self.ids.netsuite_sso_setting.text
-        json_object = {"Netsuite_SSO": self.netsuite_sso}
+        self.chrome_driver = self.ids.chrome_driver_setting.text
+        self.chrome_driver_manual = self.ids.chrome_driver_manual.active
+        self.timeout_avoidance = self.ids.timeout_avoidance_setting.active
+        json_object = {
+            "Netsuite_SSO": self.netsuite_sso,
+            "Chrome_Driver": [self.chrome_driver, self.chrome_driver_manual],
+            "Timeout_Avoidance": self.timeout_avoidance,
+        }
 
         with open(r"src\settings.json", "w") as openfile:
             json.dump(json_object, openfile, indent=4)
@@ -25,11 +32,23 @@ class SettingsScreen(Screen):
     def load_settings(self):
         if not os.path.exists(r"src\settings.json"):
             with open(r".\src\settings.json", "w") as openfile:
-                json_object = {"Netsuite_SSO": "Replace with SSO"}
+                json_object = {
+                    "Netsuite_SSO": "Replace with Netsuite SSO",
+                    "Chrome_Driver": ["None", False],
+                    "Timeout_Avoidance": True,
+                }
                 json.dump(json_object, openfile, indent=4)
 
         with open(r".\src\settings.json", "r") as openfile:
             json_object = json.load(openfile)
+
         self.netsuite_sso = json_object["Netsuite_SSO"]
+        self.chrome_driver = json_object["Chrome_Driver"][0]
+        self.chrome_driver_manual = json_object["Chrome_Driver"][1]
+        self.timeout_avoidance = json_object["Timeout_Avoidance"]
+
+        self.ids.timeout_avoidance_setting.active = self.timeout_avoidance
+        self.ids.chrome_driver_manual.active = self.chrome_driver_manual
+        self.ids.chrome_driver_setting.text = self.chrome_driver
         self.ids.netsuite_sso_setting.text = self.netsuite_sso
         openfile.close()

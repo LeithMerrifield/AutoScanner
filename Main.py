@@ -10,7 +10,6 @@ from src.LoginScreen import LoginScreen
 from src.ScannerScreen import ScannerScreen
 from src.SettingsScreen import SettingsScreen
 from kivy.base import Builder
-import os
 
 Builder.load_file("./src/kv/Login.kv")
 

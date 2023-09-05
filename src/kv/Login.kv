@@ -15,7 +15,7 @@
                 size_hint_x: .2
                 on_press: root.show_settings()
             Label:
-                text: 'Username'
+                text: 'Email'
                 font_size: 28
                 color: (1,1,1)
                 size_hint_x: .6
@@ -56,7 +56,7 @@
             padding: [20,10,10,10]
             Label:
             Label:
-                text: "Remember Username"
+                text: "Remember Email"
                 font_size: 24
             CheckBox:
                 id: login_checkbox
@@ -138,23 +138,39 @@
             orientation:'horizontal'
             Label:
                 text: "Netsuite SSO"
-                size_hint_x: .7
+                size_hint_x: .3
+            Label:
+                size_hint_x: .1
             SettingTextInput:
                 id: netsuite_sso_setting
+                size_hint_x: .58
 
         BoxLayout:
             orientation: 'horizontal'
             Label:
-                text: "Setting 2"
-                size_hint_x: .7
+                text: "Chrome Driver"
+                size_hint_x: .3
+            CheckBox:
+                id: chrome_driver_manual
+                active: False
+                size_hint_x: .05
+            Label:
+                size_hint_x: .05
             SettingTextInput:
-
+                id: chrome_driver_setting
+                size_hint_x: .58
         BoxLayout:
             orientation: 'horizontal'
             Label:
-                text: "Setting 3"
-                size_hint_x: .7
-            SettingTextInput:
+                text: "Timeout Avoidance"
+                size_hint_x: .35
+            CheckBox:
+                id: timeout_avoidance_setting
+                active: False
+                size_hint_x: .1
+            Label:
+                size_hint_x: .55
+
 
         BoxLayout:
             orientation: 'horizontal'
