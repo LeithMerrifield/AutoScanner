@@ -32,7 +32,11 @@ class SettingsScreen(Screen):
     def load_settings(self):
         if not os.path.exists(r"src\settings.json"):
             with open(r".\src\settings.json", "w") as openfile:
-                json_object = {"Netsuite_SSO": "Replace with SSO"}
+                json_object = {
+                    "Netsuite_SSO": "Replace with Netsuite SSO",
+                    "Chrome_Driver": ["None", False],
+                    "Timeout_Avoidance": True,
+                }
                 json.dump(json_object, openfile, indent=4)
 
         with open(r".\src\settings.json", "r") as openfile:
