@@ -138,9 +138,12 @@
             orientation:'horizontal'
             Label:
                 text: "Netsuite SSO"
-                size_hint_x: .7
+                size_hint_x: .3
+            Label:
+                size_hint_x: .1
             SettingTextInput:
                 id: netsuite_sso_setting
+                size_hint_x: .58
 
         BoxLayout:
             orientation: 'horizontal'
@@ -159,9 +162,15 @@
         BoxLayout:
             orientation: 'horizontal'
             Label:
-                text: "Setting 3"
-                size_hint_x: .7
-            SettingTextInput:
+                text: "Timeout Avoidance"
+                size_hint_x: .35
+            CheckBox:
+                id: timeout_avoidance_setting
+                active: False
+                size_hint_x: .1
+            Label:
+                size_hint_x: .55
+
 
         BoxLayout:
             orientation: 'horizontal'

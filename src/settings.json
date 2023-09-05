@@ -3,5 +3,6 @@
     "Chrome_Driver": [
         "None",
         false
-    ]
+    ],
+    "Timeout_Avoidance": true
 }

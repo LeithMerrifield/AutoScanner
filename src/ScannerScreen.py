@@ -3,7 +3,8 @@ from kivy.uix.screenmanager import Screen, SlideTransition
 
 import atexit
 import threading
-import os
+import os as os
+import json
 from time import sleep
 from functools import partial
 # fmt: off
@@ -196,6 +197,10 @@ class ScannerScreen(Screen):
         return
 
     def do_refresh(self, dt):
+        settings = self.read_links()
+        if not settings["Timeout_Avoidance"]:
+            Clock.schedule_once(self.do_refresh, 1200)
+            return
         self.update_status(False)
         threading.Thread(
             target=self.driver.refresh,
@@ -233,3 +238,12 @@ class ScannerScreen(Screen):
             ),
             1,
         )
+
+    def read_links(self):
+        if not os.path.exists(r"src\settings.json"):
+            return None
+
+        with open(r".\src\settings.json", "r") as openfile:
+            json_object = json.load(openfile)
+            openfile.close()
+        return json_object
