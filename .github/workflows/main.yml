@@ -6,7 +6,9 @@ on:
 
 jobs:
   build-windows:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -31,14 +33,11 @@ jobs:
           filename: 'release.zip'
           path: dist/Autoscanner
           exclusions: '*.git* /*node_modules/* .editorconfig'
-
-      - name: create_release
+          
+      - name: Release
         id: release
-        uses: rymndhng/release-on-push-action@master
-        with:
-          bump_version_scheme: minor
-          tag_prefix: v
-      
+        uses: ncipollo/release-action@v1
+
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
