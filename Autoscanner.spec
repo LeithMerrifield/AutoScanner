@@ -1,5 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
-from kivy_deps import sdl2, glew
+import os 
+os.environ['KIVY_GL_BACKEND'] = 'angle_sdl2'
+from kivy_deps import sdl2,angle
+
 
 block_cipher = None
 
@@ -41,7 +44,7 @@ exe = EXE(
 )
 coll = COLLECT(
     exe,Tree('.\\venv\\share\\sdl2\\bin\\'),
-Tree('.\\venv\\share\\glew\\bin\\'),
+Tree('.\\venv\\share\\angle\\bin\\'),
     a.binaries,
     a.zipfiles,
     a.datas,
