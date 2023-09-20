@@ -32,31 +32,20 @@ jobs:
           path: dist/Autoscanner
           exclusions: '*.git* /*node_modules/* .editorconfig'
 
-      - name: Create tag in public repository
-        run: |
-          cd ${{github.workspace}}
-          git tag v1.2.4
-          git push --tags --porcelain
-        
-      - name: create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: create_release
+        id: release
+        uses: rymndhng/release-on-push-action@master
         with:
-          tag_name: v1.2.4
-          release_name: Release v1.2.4
-          body: |
-            Test AutoRelease
-          draft: false
-          prerelease: false
+          bump_version_scheme: minor
+          tag_prefix: v
+      
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{steps.create_release.outputs.upload_url}}
+          upload_url: ${{steps.release.outputs.upload_url}}
           asset_path: dist/Autoscanner.zip
           asset_name: Autoscanner.zip
           asset_content_type: application/zip
