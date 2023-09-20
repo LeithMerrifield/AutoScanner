@@ -3,9 +3,11 @@ import os
 os.environ['KIVY_GL_BACKEND'] = 'angle_sdl2'
 from kivy_deps import sdl2,angle
 
-
 block_cipher = None
 
+deps = []
+deps += [Tree(p) for p in sdl2.dep_bins]
+deps += [Tree(p) for p in angle.dep_bins]
 
 a = Analysis(
     ['Main.py'],
@@ -43,11 +45,10 @@ exe = EXE(
     entitlements_file=None,
 )
 coll = COLLECT(
-    exe,Tree('.\\venv\\share\\sdl2\\bin\\'),
-Tree('.\\venv\\share\\angle\\bin\\'),
     a.binaries,
     a.zipfiles,
     a.datas,
+    *deps,
     strip=False,
     upx=True,
     upx_exclude=[],
