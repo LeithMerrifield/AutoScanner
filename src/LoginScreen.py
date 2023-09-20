@@ -50,6 +50,9 @@ class LoginScreen(Screen):
         user = self.read_json()
         if not user:
             return
+        if user["sso_login"]:
+            self.ids.sso_login_checkbox.active = True
+        self.last_method = user["last_method"]
         if user["remember"]:
             self.ids.username.text = user["username"]
             self.ids.password.text = self.decrypt_pass(
@@ -61,12 +64,13 @@ class LoginScreen(Screen):
             return
         key = Fernet.generate_key()
         fernet = Fernet(key)
-
         login_object = {
             "username": username,
             "password": fernet.encrypt(password.encode()).decode(),
             "encryption_key": key.decode(),
             "remember": True,
+            "sso_login": self.ids.sso_login_checkbox.active,
+            "last_method": self.ids.sso_login_checkbox.active,
         }
 
         with open(r"src\database.json", "w") as openfile:
@@ -93,16 +97,25 @@ class LoginScreen(Screen):
     def do_login(self):
         username = self.ids.username.text
         password = self.ids.password.text
+        sso_login = self.ids.sso_login_checkbox.active
+        last_method = self.last_method
         # if nothing, need to store new login
-        if "@bollebrands.com" not in username.lower() or password == "":
-            return
+        #if "@bollebrands.com" not in username.lower() or password == "":
+        #    return
 
         if self.ids.login_checkbox.active:
             self.store_login(username, password)
 
         threading.Thread(
             target=self.driver.login,
-            args=(self.login_flag, username, password, self.login_failed_callback),
+            args=(
+                self.login_flag,
+                username,
+                password,
+                self.login_failed_callback,
+                sso_login,
+                last_method,
+            ),
             daemon=True,
         ).start()
 

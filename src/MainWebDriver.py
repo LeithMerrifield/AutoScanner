@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions
 from selenium.webdriver.common.alert import Alert
+from selenium.webdriver.chrome.options import Options
 from src import Elements
 from src.state import State
 from selenium.webdriver.chrome.service import (
@@ -13,12 +14,14 @@ from selenium.webdriver.chrome.service import (
 from subprocess import CREATE_NO_WINDOW  # This flag will only be available in windows
 import os as os
 import json
+import pathlib
 import threading
 from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
+from kivy.uix.button import Button
 from functools import partial
-
+import shutil as shutil
 
 MOBILE_EMULATOR = "https://5230881.app.netsuite.com/app/site/hosting/scriptlet.nl?script=4662&deploy=1&compid=5230881"
 OFFICEURL = "https://www.office.com"
@@ -65,14 +68,18 @@ class MainWebDriver(object):
             json_object = json.load(openfile)
         return json_object
 
-    def run_driver(self, chrome_service, manual_flag) -> None:
+    def run_driver(self, chrome_service, chrome_options, manual_flag) -> None:
         if manual_flag:
             service = ChromeService(
                 executable_path=chrome_service
             )  # used to specify chrome driver
-            self.driver = webdriver.Chrome(service=service)
+            self.driver = webdriver.Chrome(
+                service=service, chrome_options=chrome_options
+            )
         else:
-            self.driver = webdriver.Chrome(service=chrome_service)
+            self.driver = webdriver.Chrome(
+                service=chrome_service, chrome_options=chrome_options
+            )
 
     # The process of picking an individual order
     def pick(self, order):
@@ -244,7 +251,13 @@ class MainWebDriver(object):
             return
 
     def login(
-        self, login_flag=None, username=None, password=None, login_failed_callback=None
+        self,
+        login_flag=None,
+        username=None,
+        password=None,
+        login_failed_callback=None,
+        sso_login=False,
+        last_method=False,
     ):
         """
         Goes through the process of logging into microsoft and navigates to netsuite
@@ -258,13 +271,24 @@ class MainWebDriver(object):
 
         chrome_service = ChromeService("chromedriver")
         chrome_service.creation_flags = CREATE_NO_WINDOW
+        chrome_options = Options()
+
+        try:
+            if last_method != sso_login:
+                shutil.rmtree("userdata", ignore_errors=False, onerror=None)
+        except FileNotFoundError:
+            pass
+
+        chrome_options.add_argument(
+            f"user-data-dir={pathlib.Path().absolute()}\\userdata"
+        )
 
         try:
             if links_object["Chrome_Driver"][1]:
                 chrome_service = links_object["Chrome_Driver"][0]
-                self.run_driver(chrome_service, True)
+                self.run_driver(chrome_service, chrome_options, True)
             else:
-                self.run_driver(chrome_service, False)
+                self.run_driver(chrome_service, chrome_options, False)
         except exceptions.SessionNotCreatedException:
             login_failed_callback()
             Clock.schedule_once(
@@ -280,6 +304,52 @@ class MainWebDriver(object):
             return
         sleep(3)
 
+        if sso_login:
+            self.login_microsoft(login_flag, username, password, login_failed_callback)
+        else:
+            self.login_no_microsoft_part_1(
+                login_flag, username, password, login_failed_callback
+            )
+
+    def login_no_microsoft_part_1(
+        self, login_flag=None, username=None, password=None, login_failed_callback=None
+    ):
+        try:
+            self.driver.get(
+                "https://5230881.app.netsuite.com/app/center/card.nl?sc=-29&whence="
+            )
+        except exceptions.NoSuchWindowException:
+            login_failed_callback()
+            self.driver_closed()
+        sleep(1)
+        WebDriverWait(self.driver, TIMOUT).until(
+            EC.element_to_be_clickable(Elements.NETSUITELOGINEMAIL)
+        ).send_keys(username)
+        sleep(1)
+        WebDriverWait(self.driver, TIMOUT).until(
+            EC.element_to_be_clickable(Elements.NETSUITELOGINPASSWORD)
+        ).send_keys(password)
+        sleep(5)
+        try:
+            test = self.driver.find_element(
+                By.XPATH,
+                "/html/body/div/div[2]/div[2]/div[2]/div/div/div[1]/div/div[1]/div[2]/span",
+            )
+            sleep(30)
+
+        except exceptions.NoSuchElementException:
+            self.get_to_orders(login_flag=login_flag)
+            # Means no need for mobile confirmation
+            pass
+
+    def wait_for_confirmation(self, confirmation, login_flag):
+        while not confirmation[0]:
+            sleep(1)
+        self.get_to_orders(login_flag=login_flag)
+
+    def login_microsoft(
+        self, login_flag=None, username=None, password=None, login_failed_callback=None
+    ):
         try:
             self.driver.get(self.netsuite_sso)
         except exceptions.NoSuchWindowException:
@@ -318,14 +388,23 @@ class MainWebDriver(object):
             self.driver_closed()
             return
         # overall try will check for if the driver closes
+        existing_login = False
         try:
-            WebDriverWait(self.driver, TIMOUT).until(
-                EC.element_to_be_clickable(Elements.USERNAMEFIELD)
-            ).send_keys(username)
-            WebDriverWait(self.driver, TIMOUT).until(
-                EC.element_to_be_clickable(Elements.NEXTBUTTON)
-            ).click()
-            sleep(1)
+            # Will check to see if the username field exists
+            # It will exist if there is no previous data or data has been wiped
+            try:
+                sleep(2)
+                self.driver.find_element(
+                    Elements.USERNAMEFIELD[0], Elements.USERNAMEFIELD[1]
+                ).send_keys(username)
+                WebDriverWait(self.driver, TIMOUT).until(
+                    EC.element_to_be_clickable(Elements.NEXTBUTTON)
+                ).click()
+                sleep(1)
+            except exceptions.NoSuchElementException:
+                # doesn't exist meaning there is an existing login
+                existing_login = True
+                pass
 
             try:
                 self.driver.find_element(By.ID, "usernameError")
@@ -340,7 +419,7 @@ class MainWebDriver(object):
                     1,
                 )
                 return
-            except Exception as e:
+            except exceptions.NoSuchElementException:
                 # means that the login passed
                 pass
 
@@ -365,18 +444,20 @@ class MainWebDriver(object):
                     1,
                 )
                 return
-            except Exception as e:
+            except exceptions.NoSuchElementException:
+                # means the password was successfully entered
                 pass
 
             WebDriverWait(self.driver, TIMOUT).until(
                 EC.element_to_be_clickable(Elements.NOBUTTON)
             ).click()
+
+            if not existing_login:
+                WebDriverWait(self.driver, TIMOUT).until(
+                    EC.element_to_be_clickable(Elements.NETSUITE_ENVIRONMENT)
+                ).click()
             sleep(2)
-            # self.driver.get(NETSUITE_SSO)
-            WebDriverWait(self.driver, TIMOUT).until(
-                EC.element_to_be_clickable(Elements.NETSUITE_ENVIRONMENT)
-            ).click()
-            self.get_to_orders(login_flag)
+            self.get_to_orders(login_flag=login_flag, previous_login=existing_login)
         except (exceptions.TimeoutException, exceptions.StaleElementReferenceException):
             login_failed_callback()
             Clock.schedule_once(
@@ -393,7 +474,7 @@ class MainWebDriver(object):
             self.driver_closed()
             return
 
-    def get_to_orders(self, login_flag=None, refresh_flag=False):
+    def get_to_orders(self, login_flag=None, refresh_flag=False, previous_login=False):
         """
         Navigates to the picking section of mobile emulator
         and sets the login_flag to true indicating the login process is done.
@@ -401,6 +482,16 @@ class MainWebDriver(object):
         sleep(2)
         if not refresh_flag:
             self.driver.get(MOBILE_EMULATOR)
+
+        if previous_login:
+            try:
+                WebDriverWait(self.driver, TIMOUT).until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, "/html/body/div/div/div[3]/button")
+                    )
+                ).click()
+            except exceptions.NoSuchElementException:
+                pass
         WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.WMS)
         ).click()
@@ -438,6 +529,20 @@ class MainWebDriver(object):
             size=(450, 200),
         )
         popup.open()
+
+    def confirmation_popup(self, title, content_text, confirmation, dt):
+        content = Button(text=content_text)
+
+        def confirm_button(confirmation):
+            confirmation[0] = True
+
+        content.bind(on_press=confirm_button(confirmation))
+        popup = Popup(
+            title=title,
+            content=content,
+            size_hint=(None, None),
+            size=(450, 200),
+        )
 
     def driver_closed(self):
         Clock.schedule_once(
