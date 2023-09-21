@@ -275,7 +275,8 @@ class MainWebDriver(object):
 
         try:
             if last_method != sso_login:
-                shutil.rmtree("userdata", ignore_errors=False, onerror=None)
+                shutil.rmtree("userdata/default/network", ignore_errors=False, onerror=None)
+                pass
         except FileNotFoundError:
             pass
 
@@ -483,16 +484,15 @@ class MainWebDriver(object):
         sleep(2)
         if not refresh_flag:
             self.driver.get(MOBILE_EMULATOR)
-
-        if previous_login:
-            try:
-                WebDriverWait(self.driver, TIMOUT).until(
-                    EC.element_to_be_clickable(
-                        (By.XPATH, "/html/body/div/div/div[3]/button")
-                    )
-                ).click()
-            except exceptions.NoSuchElementException:
-                pass
+        try:
+            WebDriverWait(self.driver, TIMOUT).until(
+                EC.element_to_be_clickable(
+                    (By.XPATH, "/html/body/div/div/div[3]/button")
+                )
+            ).click()
+        except exceptions.NoSuchElementException:
+            pass
+        sleep(1)
         WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.WMS)
         ).click()
