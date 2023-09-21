@@ -32,7 +32,7 @@ jobs:
         with:
           type: 'zip'
           filename: 'release.zip'
-          path: dist/Autoscanner
+          path: build/Autoscanner
           exclusions: '*.git* /*node_modules/* .editorconfig'
           
       - name: Release
