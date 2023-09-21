@@ -330,6 +330,10 @@ class MainWebDriver(object):
         WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.NETSUITELOGINPASSWORD)
         ).send_keys(password)
+        sleep(1)
+        WebDriverWait(self.driver, TIMOUT).until(
+            EC.element_to_be_clickable(Elements.NETSUITELOGINBUTTON)
+        ).click()
         sleep(5)
         try:
             self.driver.find_element(

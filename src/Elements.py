@@ -7,6 +7,7 @@ NOBUTTON = (By.ID, "idBtn_Back")
 
 NETSUITELOGINEMAIL = (By.ID, "email")
 NETSUITELOGINPASSWORD = (By.ID, "password")
+NETSUITELOGINBUTTON = (By.ID, "login-submit")
 
 NETSUITE_ENVIRONMENT = (
     By.XPATH,
