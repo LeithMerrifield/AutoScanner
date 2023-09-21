@@ -331,11 +331,12 @@ class MainWebDriver(object):
         ).send_keys(password)
         sleep(5)
         try:
-            test = self.driver.find_element(
+            self.driver.find_element(
                 By.XPATH,
                 "/html/body/div/div[2]/div[2]/div[2]/div/div/div[1]/div/div[1]/div[2]/span",
             )
-            sleep(30)
+            sleep(40)
+            self.get_to_orders(login_flag=login_flag)
 
         except exceptions.NoSuchElementException:
             self.get_to_orders(login_flag=login_flag)
