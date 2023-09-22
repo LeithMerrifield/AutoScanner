@@ -55,12 +55,17 @@
             size_hint_y: .1
             padding: [20,10,10,10]
             Label:
+                size_hint_x: .2
             Label:
                 text: "Remember Email"
-                font_size: 24
+                font_size: 22
+                size_hint_x: .2
+            Label:
+                size_hint_x: .05
             CheckBox:
                 id: login_checkbox
                 active: True
+                size_hint_x: .2
         Button:
             text: 'Login'
             font_size: 24
@@ -146,6 +151,17 @@
                 size_hint_x: .58
 
         BoxLayout:
+            orientation:'horizontal'
+            Label:
+                text: "Netsuite Link"
+                size_hint_x: .3
+            Label:
+                size_hint_x: .1
+            SettingTextInput:
+                id: netsuite_setting
+                size_hint_x: .58
+
+        BoxLayout:
             orientation: 'horizontal'
             Label:
                 text: "Chrome Driver"
@@ -170,14 +186,6 @@
                 size_hint_x: .1
             Label:
                 size_hint_x: .55
-
-
-        BoxLayout:
-            orientation: 'horizontal'
-            Label:
-                text: "Setting 4"
-                size_hint_x: .7
-            SettingTextInput:
 
         BoxLayout:
             orientation: 'horizontal'

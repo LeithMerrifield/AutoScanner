@@ -1,15 +1,18 @@
 name: Build Workflow
 
-on:
+on:  
   push:
-    branches: development
+    tags:
+      - '*'
 
 jobs:
   build-windows:
-    runs-on: windows-2019
+    runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
       - name: Install Python
         uses: actions/setup-python@v1
         with:
@@ -18,34 +21,35 @@ jobs:
       - name: Install requirements
         run: |
           pip install -r requirements.txt
-      - name: installer PyInstaller
+      - name: Install GLEW on Windows
         run: |
-          pip install pyinstaller
+          wget https://sourceforge.net/projects/glew/files/glew/2.1.0/glew-2.1.0-win32.zip/download -O glew.zip
+          Expand-Archive glew.zip -DestinationPath C:\path\to\glew\
+          Copy-Item -Path C:\path\to\glew\* -Recurse -Destination $env:USERPROFILE\AppData\Local\Programs\Python\Python3x\Lib\site-packages\
+        
       - name: Run PyInstaller
         run: |
           python -m PyInstaller Autoscanner.spec
-      - name: Create zip
-        run: zip -r -q Autoscanner.zip dist/Autoscanner
-      - name: create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Archive Release
+        uses: thedoctor0/zip-release@0.7.1
         with:
-          tag_name: ${{ github.event.head_commit.message }}
-          release_name: ${{ github.event.head_commit.message }}
-          overwrite: true
-          body: |
-            Test AutoRelease
-          draft: false
-          prerelease: false
+          type: 'zip'
+          filename: 'release.zip'
+          path: dist/Autoscanner
+          
+      - name: Release
+        id: release
+        uses: ncipollo/release-action@v1
+
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{steps.create_release.outputs.upload_url}}
-          asset_path: dist/Autoscanner.zip
-          asset_name: Autoscanner.zip
+          upload_url: ${{steps.release.outputs.upload_url}}
+          asset_path: ./release.zip
+          asset_name: release.zip
           asset_content_type: application/zip
+
+

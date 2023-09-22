@@ -40,8 +40,7 @@ exe = EXE(
     entitlements_file=None,
 )
 coll = COLLECT(
-    exe,Tree('.\\venv\\share\\sdl2\\bin\\'),
-Tree('.\\venv\\share\\glew\\bin\\'),
+    exe,*[Tree(p) for p in (sdl2.dep_bins + glew.dep_bins)],
     a.binaries,
     a.zipfiles,
     a.datas,

@@ -54,6 +54,9 @@ class ScannerScreen(Screen):
     """
 
     status_flag = [False]
+    # Used if timeout avoidance is disabled and will force a refresh if
+    # nothing has been scanned for 20mins
+    force_refresh_flag = [False]
 
     def __init__(self, manager, **kw):
         super(ScannerScreen, self).__init__(**kw)
@@ -169,6 +172,7 @@ class ScannerScreen(Screen):
                 self.status_flag,
                 self.order_callback,
                 self.login_callback,
+                self.force_refresh_flag,
             ),
             daemon=True,
         ).start()
@@ -199,8 +203,12 @@ class ScannerScreen(Screen):
     def do_refresh(self, dt):
         settings = self.read_links()
         if not settings["Timeout_Avoidance"]:
+            self.force_refresh_flag[0] = True
             Clock.schedule_once(self.do_refresh, 1200)
             return
+        else:
+            self.force_refresh_flag[0] = False
+
         self.update_status(False)
         threading.Thread(
             target=self.driver.refresh,

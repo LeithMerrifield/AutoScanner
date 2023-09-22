@@ -61,7 +61,6 @@ class LoginScreen(Screen):
             return
         key = Fernet.generate_key()
         fernet = Fernet(key)
-
         login_object = {
             "username": username,
             "password": fernet.encrypt(password.encode()).decode(),
@@ -94,15 +93,20 @@ class LoginScreen(Screen):
         username = self.ids.username.text
         password = self.ids.password.text
         # if nothing, need to store new login
-        if "@bollebrands.com" not in username.lower() or password == "":
-            return
+        #if "@bollebrands.com" not in username.lower() or password == "":
+        #    return
 
         if self.ids.login_checkbox.active:
             self.store_login(username, password)
 
         threading.Thread(
             target=self.driver.login,
-            args=(self.login_flag, username, password, self.login_failed_callback),
+            args=(
+                self.login_flag,
+                username,
+                password,
+                self.login_failed_callback,
+            ),
             daemon=True,
         ).start()
 
