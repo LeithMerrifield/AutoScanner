@@ -33,7 +33,6 @@ jobs:
           type: 'zip'
           filename: 'release.zip'
           path: dist/Autoscanner
-          exclusions: '*.git* /*node_modules/* .editorconfig'
           
       - name: Release
         id: release
