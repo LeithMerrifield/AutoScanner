@@ -2,7 +2,7 @@ import os
 import sys
 
 import json
-os.environ['KIVY_GL_BACKEND'] = 'angle_sdl2'
+#os.environ['KIVY_GL_BACKEND'] = 'angle_sdl2'
 if hasattr(sys, "_MEIPASS"):
     os.environ["KIVY_NO_CONSOLELOG"] = "1"
 

@@ -1,13 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
-import os 
-os.environ['KIVY_GL_BACKEND'] = 'angle_sdl2'
-from kivy_deps import sdl2,angle
+from kivy_deps import sdl2, glew
 
 block_cipher = None
 
-deps = []
-deps += [Tree(p) for p in sdl2.dep_bins]
-deps += [Tree(p) for p in angle.dep_bins]
 
 a = Analysis(
     ['Main.py'],
@@ -45,10 +40,10 @@ exe = EXE(
     entitlements_file=None,
 )
 coll = COLLECT(
+    exe,*[Tree(p) for p in (sdl2.dep_bins + glew.dep_bins)],
     a.binaries,
     a.zipfiles,
     a.datas,
-    *deps,
     strip=False,
     upx=True,
     upx_exclude=[],
