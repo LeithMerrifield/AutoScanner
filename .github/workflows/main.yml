@@ -21,10 +21,12 @@ jobs:
       - name: Install requirements
         run: |
           pip install -r requirements.txt
-      - name: Install GLEW
+      - name: Install GLEW on Windows
         run: |
-          sudo apt-get update
-          sudo apt-get install libglew-dev
+          wget https://sourceforge.net/projects/glew/files/glew/2.1.0/glew-2.1.0-win32.zip/download -O glew.zip
+          Expand-Archive glew.zip -DestinationPath C:\path\to\glew\
+          Copy-Item -Path C:\path\to\glew\* -Recurse -Destination $env:USERPROFILE\AppData\Local\Programs\Python\Python3x\Lib\site-packages\
+        
       - name: Run PyInstaller
         run: |
           python -m PyInstaller Autoscanner.spec
