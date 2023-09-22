@@ -5,10 +5,6 @@ PASSWORDFIELD = (By.ID, "i0118")
 NEXTBUTTON = (By.ID, "idSIButton9")
 NOBUTTON = (By.ID, "idBtn_Back")
 
-NETSUITELOGINEMAIL = (By.ID, "email")
-NETSUITELOGINPASSWORD = (By.ID, "password")
-NETSUITELOGINBUTTON = (By.ID, "login-submit")
-
 NETSUITE_ENVIRONMENT = (
     By.XPATH,
     "/html/body/div[2]/div[3]/div/table/tbody/tr[2]/td/table/tbody/tr[2]/td[3]/a",

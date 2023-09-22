@@ -163,13 +163,15 @@ class MainWebDriver(object):
             self.driver_closed()
 
     # Will run the scanning/picking process for n orders in order_list
-    def scan(self, my_orders: list, status_flag, order_callback, login_callback):
+    def scan(self, my_orders: list, status_flag, order_callback, login_callback,force_refresh_flag):
         """
         self.state.change_state(self.identify_page())
         if self.state.current_state != Elements.STAGEDICT["Select Order"]:
             self.resync()
         """
-
+        if force_refresh_flag:
+            self.refresh()
+            
         my_orders.reverse()
 
         for idx, order in enumerate(my_orders):
@@ -256,8 +258,6 @@ class MainWebDriver(object):
         username=None,
         password=None,
         login_failed_callback=None,
-        sso_login=False,
-        last_method=False,
     ):
         """
         Goes through the process of logging into microsoft and navigates to netsuite
@@ -273,12 +273,8 @@ class MainWebDriver(object):
         chrome_service.creation_flags = CREATE_NO_WINDOW
         chrome_options = Options()
 
-        try:
-            if last_method != sso_login:
-                shutil.rmtree("userdata/default/network", ignore_errors=False, onerror=None)
-                pass
-        except FileNotFoundError:
-            pass
+
+        shutil.rmtree("userdata/default/network", ignore_errors=False, onerror=None)
 
         chrome_options.add_argument(
             f"user-data-dir={pathlib.Path().absolute()}\\userdata"
@@ -305,48 +301,7 @@ class MainWebDriver(object):
             return
         sleep(3)
 
-        if sso_login:
-            self.login_microsoft(login_flag, username, password, login_failed_callback)
-        else:
-            self.login_no_microsoft_part_1(
-                login_flag, username, password, login_failed_callback
-            )
-
-    def login_no_microsoft_part_1(
-        self, login_flag=None, username=None, password=None, login_failed_callback=None
-    ):
-        try:
-            self.driver.get(
-                "https://5230881.app.netsuite.com/app/center/card.nl?sc=-29&whence="
-            )
-        except exceptions.NoSuchWindowException:
-            login_failed_callback()
-            self.driver_closed()
-        sleep(1)
-        WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(Elements.NETSUITELOGINEMAIL)
-        ).send_keys(username)
-        sleep(1)
-        WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(Elements.NETSUITELOGINPASSWORD)
-        ).send_keys(password)
-        sleep(1)
-        WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(Elements.NETSUITELOGINBUTTON)
-        ).click()
-        sleep(5)
-        try:
-            self.driver.find_element(
-                By.XPATH,
-                "/html/body/div/div[2]/div[2]/div[2]/div/div/div[1]/div/div[1]/div[2]/span",
-            )
-            sleep(40)
-            self.get_to_orders(login_flag=login_flag)
-
-        except exceptions.NoSuchElementException:
-            self.get_to_orders(login_flag=login_flag)
-            # Means no need for mobile confirmation
-            pass
+        self.login_microsoft(login_flag, username, password, login_failed_callback)
 
     def wait_for_confirmation(self, confirmation, login_flag):
         while not confirmation[0]:
@@ -463,7 +418,7 @@ class MainWebDriver(object):
                     EC.element_to_be_clickable(Elements.NETSUITE_ENVIRONMENT)
                 ).click()
             sleep(2)
-            self.get_to_orders(login_flag=login_flag, previous_login=existing_login)
+            self.get_to_orders(login_flag=login_flag)
         except (exceptions.TimeoutException, exceptions.StaleElementReferenceException):
             login_failed_callback()
             Clock.schedule_once(
@@ -480,7 +435,7 @@ class MainWebDriver(object):
             self.driver_closed()
             return
 
-    def get_to_orders(self, login_flag=None, refresh_flag=False, previous_login=False):
+    def get_to_orders(self, login_flag=None, refresh_flag=False):
         """
         Navigates to the picking section of mobile emulator
         and sets the login_flag to true indicating the login process is done.
@@ -488,12 +443,10 @@ class MainWebDriver(object):
         sleep(2)
         if not refresh_flag:
             self.driver.get(MOBILE_EMULATOR)
+
         try:
-            WebDriverWait(self.driver, TIMOUT).until(
-                EC.element_to_be_clickable(
-                    (By.XPATH, "/html/body/div/div/div[3]/button")
-                )
-            ).click()
+            sleep(1)
+            self.driver.find_element(By.XPATH, "/html/body/div/div/div[3]/button").click()
         except exceptions.NoSuchElementException:
             pass
         sleep(1)
@@ -534,20 +487,6 @@ class MainWebDriver(object):
             size=(450, 200),
         )
         popup.open()
-
-    def confirmation_popup(self, title, content_text, confirmation, dt):
-        content = Button(text=content_text)
-
-        def confirm_button(confirmation):
-            confirmation[0] = True
-
-        content.bind(on_press=confirm_button(confirmation))
-        popup = Popup(
-            title=title,
-            content=content,
-            size_hint=(None, None),
-            size=(450, 200),
-        )
 
     def driver_closed(self):
         Clock.schedule_once(
