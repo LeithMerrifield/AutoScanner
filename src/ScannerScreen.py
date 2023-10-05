@@ -11,6 +11,7 @@ from functools import partial
 from kivy.core.window import Window  # pylint: disable=wrong-import-position,ungrouped-imports
 # fmt: on
 
+REFRESH_TIMER = 1200
 
 class ScannerScreen(Screen):
     """
@@ -117,7 +118,7 @@ class ScannerScreen(Screen):
         self.update_status(True)
         # in the event that we need to do the login process again reset login_flag to false
         self.login_screen.login_flag[0] = False
-        Clock.schedule_once(self.do_refresh, 1200)
+        Clock.schedule_once(self.do_refresh, REFRESH_TIMER)
 
     def wait_for_status_change(self):
         """
@@ -179,7 +180,7 @@ class ScannerScreen(Screen):
 
         threading.Thread(target=self.wait_for_status_change, daemon=True).start()
         # self.ids.order_list.text = ""
-        Clock.schedule_once(self.do_refresh, 1200)
+        Clock.schedule_once(self.do_refresh, REFRESH_TIMER)
 
     def do_remove_all(self):
         """
@@ -204,7 +205,7 @@ class ScannerScreen(Screen):
         settings = self.read_links()
         if not settings["Timeout_Avoidance"]:
             self.force_refresh_flag[0] = True
-            Clock.schedule_once(self.do_refresh, 1200)
+            Clock.schedule_once(self.do_refresh, REFRESH_TIMER)
             return
         else:
             self.force_refresh_flag[0] = False
@@ -216,7 +217,7 @@ class ScannerScreen(Screen):
             daemon=True,
         ).start()
         threading.Thread(target=self.wait_for_status_change, daemon=True).start()
-        Clock.schedule_once(self.do_refresh, 1200)
+        Clock.schedule_once(self.do_refresh, REFRESH_TIMER)
 
     def show_settings(self):
         self.settings_screen.set_previous_screen("scanner")

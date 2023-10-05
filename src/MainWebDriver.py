@@ -169,8 +169,8 @@ class MainWebDriver(object):
         if self.state.current_state != Elements.STAGEDICT["Select Order"]:
             self.resync()
         """
-        if force_refresh_flag:
-            self.refresh()
+        if force_refresh_flag[0]:
+            self.refresh(force_refresh_flag=force_refresh_flag)
             
         my_orders.reverse()
 
@@ -228,12 +228,18 @@ class MainWebDriver(object):
         status_flag[0] = True
         print("Scanning Complete \n Start Again\n")
 
-    def refresh(self, status_flag=None, login_callback=None):
+    def refresh(self, force_refresh_flag=None,status_flag=None, login_callback=None):
         """
         moves back and forth to avoid idle timeout,
         not sure it actually works
         """
+        
         try:
+            if force_refresh_flag is None:
+                pass
+            else:
+                force_refresh_flag[0] = False
+                
             self.driver.get(self.netsuite_sso)
             sleep(1)
             alert = Alert(self.driver)
@@ -251,6 +257,7 @@ class MainWebDriver(object):
             login_callback()
             self.driver_closed()
             return
+        
 
     def login(
         self,
