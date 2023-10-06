@@ -256,8 +256,13 @@ class MainWebDriver(object):
                 
             self.driver.get(self.netsuite_sso)
             sleep(1)
-            alert = Alert(self.driver)
-            alert.accept()
+
+            try:
+                alert = Alert(self.driver)
+                alert.accept()
+            except exceptions.NoAlertPresentException:
+                #   no alert for some reason
+                pass
             sleep(5)
             self.driver.get(MOBILE_EMULATOR)
             sleep(2)
