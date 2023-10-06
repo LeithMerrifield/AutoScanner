@@ -189,10 +189,16 @@ class MainWebDriver(object):
                 try:
                     WebDriverWait(self.driver, 2).until(
                         EC.element_to_be_clickable(Elements.ORDERINPUT)
+                    ).clear()
+                    WebDriverWait(self.driver, 2).until(
+                        EC.element_to_be_clickable(Elements.ORDERINPUT)
                     ).send_keys(order)
                 except exceptions.TimeoutException:
                     # Timeout in finding the normal textbox to enter the order into
                     try:
+                        WebDriverWait(self.driver, 2).until(
+                            EC.element_to_be_clickable(Elements.ORDERINPUTWITHERROR)
+                        ).clear()
                         WebDriverWait(self.driver, 2).until(
                             EC.element_to_be_clickable(Elements.ORDERINPUTWITHERROR)
                         ).send_keys(order)
@@ -208,11 +214,22 @@ class MainWebDriver(object):
                         self.refresh()
                         continue
 
-                WebDriverWait(self.driver, TIMOUT).until(
+                WebDriverWait(self.driver, 2).until(
                     EC.element_to_be_clickable(Elements.ENTERORDER)
                 ).click()
 
                 try:
+
+                    for i in range(5):
+                        print(self.identify_page())
+                        if self.identify_page().lower() == "Select Pick Task".lower():
+                            break
+                        else:
+                            sleep(1)
+
+                        if i is 4:
+                            raise exceptions.TimeoutException
+                    
                     self.pick(order)
                 except exceptions.TimeoutException:
                     continue
@@ -275,8 +292,7 @@ class MainWebDriver(object):
         except exceptions.NoSuchWindowException:
             login_callback()
             self.driver_closed()
-            return
-        
+            return     
 
     def login(
         self,
