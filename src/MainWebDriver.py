@@ -191,9 +191,23 @@ class MainWebDriver(object):
                         EC.element_to_be_clickable(Elements.ORDERINPUT)
                     ).send_keys(order)
                 except exceptions.TimeoutException:
-                    WebDriverWait(self.driver, 2).until(
-                        EC.element_to_be_clickable(Elements.ORDERINPUTWITHERROR)
-                    ).send_keys(order)
+                    # Timeout in finding the normal textbox to enter the order into
+                    try:
+                        WebDriverWait(self.driver, 2).until(
+                            EC.element_to_be_clickable(Elements.ORDERINPUTWITHERROR)
+                        ).send_keys(order)
+                    except exceptions.TimeoutException:
+                        # At this point there is no text box to enter into at all
+                        # so a refresh is in order
+                        my_orders[idx] = f"{order} - Failed, Will Retry"
+                        newlist = [e for e in my_orders]
+                        newlist.append(f"{order}")
+                        newlist.reverse()
+                        order_callback(order_list=newlist)
+                        my_orders.append(order)
+                        self.refresh()
+                        continue
+
                 WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.ENTERORDER)
                 ).click()
