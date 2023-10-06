@@ -2,8 +2,9 @@ import os
 import sys
 import logging
 import json
-import datetime
-#os.environ['KIVY_GL_BACKEND'] = 'angle_sdl2'
+from datetime import datetime
+
+# os.environ['KIVY_GL_BACKEND'] = 'angle_sdl2'
 if hasattr(sys, "_MEIPASS"):
     os.environ["KIVY_NO_CONSOLELOG"] = "1"
 
@@ -15,6 +16,7 @@ from src.SettingsScreen import SettingsScreen
 from kivy.base import Builder
 
 Builder.load_file("./src/kv/Login.kv")
+
 
 class LoginApp(App):
     def build(self):
@@ -28,16 +30,17 @@ class LoginApp(App):
         manager.add_widget(ScannerScreen(name="scanner", manager=manager))
         return manager
 
+
 def Bypass_Reopen_Tabs():
     json_object = {}
     try:
-        with open(r".\userdata\default\Preferences","r",encoding="utf-8") as openfile:
+        with open(r".\userdata\default\Preferences", "r", encoding="utf-8") as openfile:
             json_object = json.load(openfile)
             openfile.close()
     except:
-        return    
-    
-    with open(r".\userdata\default\Preferences","w",encoding="utf-8") as openfile:
+        return
+
+    with open(r".\userdata\default\Preferences", "w", encoding="utf-8") as openfile:
         json_object["profile"]["exit_type"] = "normal"
         json.dump(json_object, openfile, indent=4)
         openfile.close()
@@ -48,10 +51,4 @@ def Bypass_Reopen_Tabs():
 
 if __name__ == "__main__":
     Bypass_Reopen_Tabs()
-    try:
-        LoginApp().run()
-    except Exception as e:
-        now = datetime.now()
-        dtString =now.strftime("_%d%m_%H%M") 
-        with open(".\crashlog{}.out".format(dtString),"w",encoding="utf-8") as openfile:
-            sys.stdout = openfile
+    LoginApp().run()
