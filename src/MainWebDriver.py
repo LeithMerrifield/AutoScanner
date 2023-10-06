@@ -315,9 +315,11 @@ class MainWebDriver(object):
         chrome_service.creation_flags = CREATE_NO_WINDOW
         chrome_options = Options()
 
-
-        shutil.rmtree("userdata/default/network", ignore_errors=False, onerror=None)
-
+        try:
+            shutil.rmtree("userdata/default/network", ignore_errors=False, onerror=None)
+        except:
+            pass
+        
         chrome_options.add_argument(
             f"user-data-dir={pathlib.Path().absolute()}\\userdata"
         )
