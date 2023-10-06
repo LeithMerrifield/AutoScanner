@@ -1,7 +1,8 @@
 import os
 import sys
-
+import logging
 import json
+import datetime
 #os.environ['KIVY_GL_BACKEND'] = 'angle_sdl2'
 if hasattr(sys, "_MEIPASS"):
     os.environ["KIVY_NO_CONSOLELOG"] = "1"
@@ -47,4 +48,10 @@ def Bypass_Reopen_Tabs():
 
 if __name__ == "__main__":
     Bypass_Reopen_Tabs()
-    LoginApp().run()
+    try:
+        LoginApp().run()
+    except Exception as e:
+        now = datetime.now()
+        dtString =now.strftime("_%d%m_%H%M") 
+        with open(".\crashlog{}.out".format(dtString),"w",encoding="utf-8") as openfile:
+            sys.stdout = openfile
