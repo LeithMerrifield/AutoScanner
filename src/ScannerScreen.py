@@ -13,6 +13,7 @@ from kivy.core.window import Window  # pylint: disable=wrong-import-position,ung
 
 REFRESH_TIMER = 1200
 
+
 class ScannerScreen(Screen):
     """
     Scanner Screen for Kivy GUI
@@ -213,7 +214,7 @@ class ScannerScreen(Screen):
         self.update_status(False)
         threading.Thread(
             target=self.driver.refresh,
-            args=(self.status_flag, self.login_callback),
+            args=(None, self.status_flag, self.login_callback),
             daemon=True,
         ).start()
         threading.Thread(target=self.wait_for_status_change, daemon=True).start()
