@@ -163,7 +163,14 @@ class MainWebDriver(object):
             self.driver_closed()
 
     # Will run the scanning/picking process for n orders in order_list
-    def scan(self, my_orders: list, status_flag, order_callback, login_callback,force_refresh_flag):
+    def scan(
+        self,
+        my_orders: list,
+        status_flag,
+        order_callback,
+        login_callback,
+        force_refresh_flag,
+    ):
         """
         self.state.change_state(self.identify_page())
         if self.state.current_state != Elements.STAGEDICT["Select Order"]:
@@ -171,7 +178,7 @@ class MainWebDriver(object):
         """
         if force_refresh_flag[0]:
             self.refresh(force_refresh_flag=force_refresh_flag)
-            
+
         my_orders.reverse()
 
         for idx, order in enumerate(my_orders):
@@ -219,7 +226,6 @@ class MainWebDriver(object):
                 ).click()
 
                 try:
-
                     for i in range(5):
                         print(self.identify_page())
                         if self.identify_page().lower() == "Select Pick Task".lower():
@@ -229,7 +235,7 @@ class MainWebDriver(object):
 
                         if i is 4:
                             raise exceptions.TimeoutException
-                    
+
                     self.pick(order)
                 except exceptions.TimeoutException:
                     continue
@@ -259,18 +265,18 @@ class MainWebDriver(object):
         status_flag[0] = True
         print("Scanning Complete \n Start Again\n")
 
-    def refresh(self, force_refresh_flag=None,status_flag=None, login_callback=None):
+    def refresh(self, force_refresh_flag=None, status_flag=None, login_callback=None):
         """
         moves back and forth to avoid idle timeout,
         not sure it actually works
         """
-        
+
         try:
             if force_refresh_flag is None:
                 pass
             else:
                 force_refresh_flag[0] = False
-                
+
             self.driver.get(self.netsuite_sso)
             sleep(1)
 
@@ -292,7 +298,7 @@ class MainWebDriver(object):
         except exceptions.NoSuchWindowException:
             login_callback()
             self.driver_closed()
-            return     
+            return
 
     def login(
         self,
@@ -319,7 +325,7 @@ class MainWebDriver(object):
             shutil.rmtree("userdata/default/network", ignore_errors=False, onerror=None)
         except:
             pass
-        
+
         chrome_options.add_argument(
             f"user-data-dir={pathlib.Path().absolute()}\\userdata"
         )
@@ -457,11 +463,28 @@ class MainWebDriver(object):
                 EC.element_to_be_clickable(Elements.NOBUTTON)
             ).click()
 
-            if not existing_login:
-                WebDriverWait(self.driver, TIMOUT).until(
-                    EC.element_to_be_clickable(Elements.NETSUITE_ENVIRONMENT)
-                ).click()
+            count = 0
+            while count < TIMOUT:
+                try:
+                    WebDriverWait(self.driver, 1).until(
+                        EC.element_to_be_clickable(Elements.NETSUITE_ENVIRONMENT)
+                    ).click()
+                    break
+                except:
+                    pass
+                try:
+                    WebDriverWait(self.driver, 1).until(
+                        EC.element_to_be_clickable(Elements.NETSUITEHOMEPAGE)
+                    ).click()
+                    break
+                except:
+                    pass
+
+                count += 1
+                # page doesn't exist and I think is linked to new accounts made with netsuite not having
+                # the ability to chose the netsuite environment.
             sleep(2)
+
             self.get_to_orders(login_flag=login_flag)
         except (exceptions.TimeoutException, exceptions.StaleElementReferenceException):
             login_failed_callback()
@@ -490,7 +513,9 @@ class MainWebDriver(object):
 
         try:
             sleep(1)
-            self.driver.find_element(By.XPATH, "/html/body/div/div/div[3]/button").click()
+            self.driver.find_element(
+                By.XPATH, "/html/body/div/div/div[3]/button"
+            ).click()
         except exceptions.NoSuchElementException:
             pass
         sleep(1)

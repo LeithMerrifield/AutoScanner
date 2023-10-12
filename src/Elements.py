@@ -5,6 +5,9 @@ PASSWORDFIELD = (By.ID, "i0118")
 NEXTBUTTON = (By.ID, "idSIButton9")
 NOBUTTON = (By.ID, "idBtn_Back")
 
+
+NETSUITEHOMEPAGE = (By.ID, "uif53")  # netsuite homepage identifier?
+
 NETSUITE_ENVIRONMENT = (
     By.XPATH,
     "/html/body/div[2]/div[3]/div/table/tbody/tr[2]/td/table/tbody/tr[2]/td[3]/a",
