@@ -91,26 +91,23 @@ class MainWebDriver(object):
         sleep(2)
         try:
             while True:
-                sleep(1)
+                sleep(2)
                 WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.FIRSTENTRY)
                 ).click()
-                sleep(1)
+                sleep(2)
                 WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.BINNUMBER)
                 ).click()
-                sleep(1)
+                sleep(2)
                 WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.ITEMNUMBER)
                 ).click()
                 sleep(3)
 
-                WebDriverWait(self.driver, TIMOUT).until(
-                    EC.presence_of_element_located(Elements.QUANTITY)
-                )
                 amount = self.driver.find_element(
                     By.XPATH,
-                    "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]/span",
+                    "//*[@id='singleorerPicking_quantityScan_lblQuantityRemaining']",
                 ).text.split(" ")[0]
                 amount += "\n"
                 WebDriverWait(self.driver, TIMOUT).until(
@@ -142,11 +139,12 @@ class MainWebDriver(object):
                 EC.element_to_be_clickable(Elements.STATIONINPUT)
             ).send_keys(station)
 
-            sleep(1)
+            sleep(3)
 
             WebDriverWait(self.driver, TIMOUT).until(
                 EC.element_to_be_clickable(Elements.NEXTORDERBUTTON)
             ).click()
+            sleep(2)
         except exceptions.NoSuchWindowException:
             self.driver_closed()
             return

@@ -12,7 +12,7 @@ NETSUITE_ENVIRONMENT = (
     By.XPATH,
     "/html/body/div[2]/div[3]/div/table/tbody/tr[2]/td/table/tbody/tr[2]/td[3]/a",
 )
-WMS = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div/div[2]/div[2]/img")
+WMS = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div/div[2]/div[1]/img")
 WAREHOUSE = (
     By.XPATH,
     "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]/div/div/div[6]/div[1]/table/tbody/tr[2]/td",
@@ -44,7 +44,8 @@ ITEMNUMBER = (
     By.XPATH,
     "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/span",
 )
-QUANTITY = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]/span")
+QUANTITY = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/span")
+
 QUANTITYINPUT = (
     By.XPATH,
     "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[4]/div/div[2]/div/div/input",
@@ -59,7 +60,7 @@ STATIONINPUT = (
 )
 NEXTORDERBUTTON = (
     By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div[3]/button",
+    "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div[2]/button",
 )
 
 SALESORDERREFRESH = "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]"
