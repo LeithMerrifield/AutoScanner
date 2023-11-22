@@ -22,7 +22,7 @@ class SettingsScreen(Screen):
             "Timeout_Avoidance": self.timeout_avoidance,
         }
 
-        with open(r"src\settings.json", "w",encoding="utf-8") as openfile:
+        with open(r"src\settings.json", "w", encoding="utf-8") as openfile:
             json.dump(json_object, openfile, indent=4)
 
         self.manager.transition = SlideTransition(direction="left")
@@ -33,16 +33,16 @@ class SettingsScreen(Screen):
 
     def load_settings(self):
         if not os.path.exists(r"src\settings.json"):
-            with open(r".\src\settings.json", "w") as openfile:
+            with open(r".\src\settings.json", "w", encoding="utf-8") as openfile:
                 json_object = {
                     "Netsuite_SSO": "Replace with Netsuite SSO",
                     "Netsuite": "https://5230881.app.netsuite.com/app/center/card.nl?sc=-29&whence=",
-                    "Chrome_Driver": ["None", False],
+                    "Chrome_Driver": ["./chromedriver-win64/chromedriver.exe", False],
                     "Timeout_Avoidance": True,
                 }
                 json.dump(json_object, openfile, indent=4)
 
-        with open(r".\src\settings.json", "r") as openfile:
+        with open(r".\src\settings.json", "r", encoding="utf-8") as openfile:
             json_object = json.load(openfile)
 
         self.netsuite_sso = json_object["Netsuite_SSO"]

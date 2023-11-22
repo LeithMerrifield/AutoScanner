@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import threading
 import json
 from datetime import datetime
 
@@ -13,6 +14,7 @@ from kivy.uix.screenmanager import ScreenManager
 from src.LoginScreen import LoginScreen
 from src.ScannerScreen import ScannerScreen
 from src.SettingsScreen import SettingsScreen
+from src.CheckDriver import compare_and_download as driver_update
 from kivy.base import Builder
 
 Builder.load_file("./src/kv/Login.kv")
@@ -50,5 +52,13 @@ def Bypass_Reopen_Tabs():
 
 
 if __name__ == "__main__":
-    Bypass_Reopen_Tabs()
+    threading.Thread(
+        target=Bypass_Reopen_Tabs,
+        daemon=True,
+    ).start()
+
+    threading.Thread(
+        target=driver_update,
+        daemon=True,
+    ).start()
     LoginApp().run()

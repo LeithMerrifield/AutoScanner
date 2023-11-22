@@ -8,6 +8,7 @@ from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.chrome.options import Options
 from src import Elements
 from src.state import State
+from src.CheckDriver import compare_and_download as update_driver
 from selenium.webdriver.chrome.service import (
     Service as ChromeService,
 )  # Similar thing for firefox also!
@@ -356,18 +357,33 @@ class MainWebDriver(object):
                 self.run_driver(chrome_service, chrome_options, True)
             else:
                 self.run_driver(chrome_service, chrome_options, False)
-        except exceptions.SessionNotCreatedException:
+        except (
+            exceptions.SessionNotCreatedException,
+            exceptions.SeleniumManagerException,
+        ):
             login_callback()
             Clock.schedule_once(
                 partial(
                     self.test_popup,
                     "Chrome Driver Issue",
-                    "  You need to disable the manual override.\n"
-                    + "                   If the issue persists\n"
-                    + "Update and manually set the chrome driver.",
+                    "  I've downloaded the new driver\n \
+                       Try again",
                 ),
                 1,
             )
+            update_driver()
+            return
+        except exceptions.WebDriverException as e:
+            login_callback()
+            if "cannot find chrome binary" in e.msg.lower():
+                Clock.schedule_once(
+                    partial(
+                        self.test_popup,
+                        "Chrome Issue",
+                        "Chrome isn't installed",
+                    ),
+                    1,
+                )
             return
         sleep(3)
 
