@@ -12,16 +12,14 @@ from selenium.webdriver.chrome.service import (
     Service as ChromeService,
 )  # Similar thing for firefox also!
 from subprocess import CREATE_NO_WINDOW  # This flag will only be available in windows
-import os as os
+import os
 import json
 import pathlib
-import threading
 from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
-from kivy.uix.button import Button
 from functools import partial
-import shutil as shutil
+import shutil
 
 MOBILE_EMULATOR = "https://5230881.app.netsuite.com/app/site/hosting/scriptlet.nl?script=4662&deploy=1&compid=5230881"
 OFFICEURL = "https://www.office.com"
@@ -55,12 +53,16 @@ class MainWebDriver(object):
     """
 
     def __init__(self) -> None:
-        # threading.Thread(target=self.run_driver).start()
         self.order_list = []
         self.state = State()
         self.driver = None
 
     def read_links(self):
+        """Reads settings json file and returns json object
+
+        Returns:
+            json object: All settings
+        """
         if not os.path.exists(r"src\settings.json"):
             return None
 
@@ -69,6 +71,13 @@ class MainWebDriver(object):
         return json_object
 
     def run_driver(self, chrome_service, chrome_options, manual_flag) -> None:
+        """Launches web driver
+
+        Args:
+            chrome_service (str): path to chrome driver
+            chrome_options (Options): Set of options for the web driver
+            manual_flag (bool): set to determine if self defined path to chrome driver
+        """
         if manual_flag:
             service = ChromeService(
                 executable_path=chrome_service
@@ -81,12 +90,14 @@ class MainWebDriver(object):
                 service=chrome_service, chrome_options=chrome_options
             )
 
-    # The process of picking an individual order
     def pick(self, order):
         """
         Continually Crawls through individual picking of each item untill it detects
         that the page is not NEXTPICKTASK, meaning all items are fullfilled and a packstation
         is assigned based on whether the order is for Australia or New Zealand
+
+        Args:
+            order (str): Order Number
         """
         sleep(2)
         try:
@@ -149,30 +160,27 @@ class MainWebDriver(object):
             self.driver_closed()
             return
 
-    def resync(self):
-        """
-        Re orients the driver to the start of the mobile emulator website
-        """
-        try:
-            self.driver.get(MOBILE_EMULATOR)
-            sleep(3)
-            self.get_to_orders()
-        except exceptions.NoSuchWindowException:
-            self.driver_closed()
-
-    # Will run the scanning/picking process for n orders in order_list
     def scan(
         self,
         my_orders: list,
-        status_flag,
-        order_callback,
-        login_callback,
-        force_refresh_flag,
+        status_flag: bool,
+        order_callback: callable,
+        login_callback: callable,
+        force_refresh_flag: bool,
     ):
-        """
-        self.state.change_state(self.identify_page())
-        if self.state.current_state != Elements.STAGEDICT["Select Order"]:
-            self.resync()
+        """Takes a list of orders and processes them
+
+        Args:
+            my_orders (list): List of orders to be processed
+            status_flag (bool): Used to set the status indicator of the app
+            order_callback (callable): Used to update the gui text with status
+            login_callback (callable): Will trigger on exception to create pop up on gui
+            force_refresh_flag (bool): Used to refresh driver in the event netsuite has timeout.
+
+        Raises:
+            exceptions.TimeoutException: A certain element isn't found in time.
+            exceptions.NoSuchWindowException: Main window is closed
+            exceptions.UnexpectedAlertPresentException: Random popup has appeared
         """
         if force_refresh_flag[0]:
             self.refresh(force_refresh_flag=force_refresh_flag)
@@ -231,7 +239,7 @@ class MainWebDriver(object):
                         else:
                             sleep(1)
 
-                        if i is 4:
+                        if i == 4:
                             raise exceptions.TimeoutException
 
                     self.pick(order)
@@ -264,11 +272,13 @@ class MainWebDriver(object):
         print("Scanning Complete \n Start Again\n")
 
     def refresh(self, force_refresh_flag=None, status_flag=None, login_callback=None):
-        """
-        moves back and forth to avoid idle timeout,
-        not sure it actually works
-        """
+        """Re-orients the driver to the start of the mobile emulator website
 
+        Args:
+            force_refresh_flag (bool, optional): Determines if a forced refresh is being triggered. Defaults to None.
+            status_flag (bool, optional): Used to set the status indicator of the app . Defaults to None.
+            login_callback (callable, optional): Used to initiate error popup . Defaults to None.
+        """
         try:
             if force_refresh_flag is None:
                 pass
@@ -300,13 +310,25 @@ class MainWebDriver(object):
 
     def login(
         self,
-        login_flag=None,
-        username=None,
-        password=None,
-        login_failed_callback=None,
+        login_flag,
+        username,
+        password,
+        login_callback,
     ):
-        """
-        Goes through the process of logging into microsoft and navigates to netsuite
+        """Setups and creates webdriver, also responsible for automated
+        login and navigation to wms picking screen
+
+        Args:
+            login_flag (list[bool]): Used as a pass by reference to set the status
+            of the application.
+            username (str): Username to be entered into login.
+            password (str): Password to be entered into login.
+            login_callback (callable):  Used to initiate error popup.
+
+        Raises:
+            Exception:
+                exceptions.SessionNotCreatedException: Means the
+                webdriver did not initiate properly.
         """
         links_object = self.read_links()
 
@@ -335,7 +357,7 @@ class MainWebDriver(object):
             else:
                 self.run_driver(chrome_service, chrome_options, False)
         except exceptions.SessionNotCreatedException:
-            login_failed_callback()
+            login_callback()
             Clock.schedule_once(
                 partial(
                     self.test_popup,
@@ -349,16 +371,18 @@ class MainWebDriver(object):
             return
         sleep(3)
 
-        self.login_microsoft(login_flag, username, password, login_failed_callback)
+        self.login_microsoft(login_flag, username, password, login_callback)
 
-    def wait_for_confirmation(self, confirmation, login_flag):
-        while not confirmation[0]:
-            sleep(1)
-        self.get_to_orders(login_flag=login_flag)
+    def login_microsoft(self, login_flag, username, password, login_failed_callback):
+        """Was separated from login function to accomodate for netsuite only
+        logins
 
-    def login_microsoft(
-        self, login_flag=None, username=None, password=None, login_failed_callback=None
-    ):
+            login_flag (list[bool]): Used as a pass by reference to set the status
+            of the application.
+            username (str): Username to be entered into login.
+            password (str): Password to be entered into login.
+            login_callback (callable):  Used to initiate error popup.
+        """
         try:
             self.driver.get(self.netsuite_sso)
         except exceptions.NoSuchWindowException:
@@ -500,11 +524,17 @@ class MainWebDriver(object):
             self.driver_closed()
             return
 
-    def get_to_orders(self, login_flag=None, refresh_flag=False):
-        """
-        Navigates to the picking section of mobile emulator
+    def get_to_orders(self, login_flag, refresh_flag=False):
+        """Navigates to the picking section of mobile emulator
         and sets the login_flag to true indicating the login process is done.
+
+        Args:
+            login_flag (list[bool]): Used as a pass by reference to set the status
+            of the application.
+            refresh_flag (bool, optional): If it's true it means there is a refresh occuring and to not
+            get the url again
         """
+
         sleep(2)
         if not refresh_flag:
             self.driver.get(MOBILE_EMULATOR)
@@ -547,6 +577,13 @@ class MainWebDriver(object):
         login_flag[0] = True
 
     def test_popup(self, title, content_text, dt):
+        """Creates a popup with the passed content_text
+
+        Args:
+            title (str): title text of the popup
+            content_text (str): The content text of the popup
+            dt (int): used by clock scheduling tasks
+        """
         popup = Popup(
             title=title,
             content=Label(text=content_text),
@@ -556,6 +593,9 @@ class MainWebDriver(object):
         popup.open()
 
     def driver_closed(self):
+        """
+        initiates pop up
+        """
         Clock.schedule_once(
             partial(
                 self.test_popup,
