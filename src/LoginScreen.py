@@ -68,12 +68,12 @@ class LoginScreen(Screen):
             "remember": True,
         }
 
-        with open(r"src\database.json", "w") as openfile:
+        with open(r"src\database.json", "w", encoding="utf-8") as openfile:
             json.dump(login_object, openfile, indent=4)
 
     def reset_database(self):
         default_object = {}
-        with open(r"src\database.json", "w") as openfile:
+        with open(r"src\database.json", "w", encoding="utf-8") as openfile:
             json.dump(default_object, openfile, indent=4)
 
     def decrypt_pass(self, password, key):
@@ -84,7 +84,7 @@ class LoginScreen(Screen):
         if not os.path.exists(r"src\database.json"):
             return None
 
-        with open(r"src\database.json", "r") as openfile:
+        with open(r"src\database.json", "r", encoding="utf-8") as openfile:
             json_object = json.load(openfile)
 
         return json_object
@@ -93,7 +93,7 @@ class LoginScreen(Screen):
         username = self.ids.username.text
         password = self.ids.password.text
         # if nothing, need to store new login
-        #if "@bollebrands.com" not in username.lower() or password == "":
+        # if "@bollebrands.com" not in username.lower() or password == "":
         #    return
 
         if self.ids.login_checkbox.active:

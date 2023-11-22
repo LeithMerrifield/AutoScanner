@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import threading
 import json
 from datetime import datetime
 
@@ -51,10 +52,13 @@ def Bypass_Reopen_Tabs():
 
 
 if __name__ == "__main__":
-    Bypass_Reopen_Tabs()
-    try:
-        driver_update()
-    except KeyError:
-        # setting file doesn't exist
-        pass
+    threading.Thread(
+        target=Bypass_Reopen_Tabs,
+        daemon=True,
+    ).start()
+
+    threading.Thread(
+        target=driver_update,
+        daemon=True,
+    ).start()
     LoginApp().run()

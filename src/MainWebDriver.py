@@ -373,6 +373,18 @@ class MainWebDriver(object):
             )
             update_driver()
             return
+        except exceptions.WebDriverException as e:
+            login_callback()
+            if "cannot find chrome binary" in e.msg.lower():
+                Clock.schedule_once(
+                    partial(
+                        self.test_popup,
+                        "Chrome Issue",
+                        "Chrome isn't installed",
+                    ),
+                    1,
+                )
+            return
         sleep(3)
 
         self.login_microsoft(login_flag, username, password, login_callback)

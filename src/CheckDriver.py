@@ -1,7 +1,9 @@
 import subprocess
 import json
+from os.path import exists
+from os import remove
 from zipfile import ZipFile
-from urllib.request import urlretrieve, urlopen
+from urllib.request import urlretrieve
 
 
 def get_driver_version():
@@ -27,10 +29,20 @@ def get_download_link(version_number):
     return link
 
 
+def check_file():
+    if exists("./src/driver_version.json"):
+        return
+    else:
+        with open("./src/driver_version.json", "w", encoding="utf-8") as openfile:
+            template = {"Chrome_Driver_Version": ""}
+            json.dump(template, openfile, indent=4)
+    return
+
+
 def get_local_driver_version():
     version = None
     try:
-        with open("./src/settings.json", "r") as openfile:
+        with open("./src/driver_version.json", "r", encoding="utf-8") as openfile:
             json_object = json.load(openfile)
             version = json_object["Chrome_Driver_Version"]
     except KeyError:
@@ -39,22 +51,34 @@ def get_local_driver_version():
 
 
 def update_version(version):
-    with open("./src/settings.json", "r") as openfile:
+    json_object = None
+    with open("./src/driver_version.json", "r", encoding="utf-8") as openfile:
         json_object = json.load(openfile)
-        version = json_object["Chrome_Driver_Version"]
+
+    with open("./src/driver_version.json", "w", encoding="utf-8") as openfile:
+        json_object["Chrome_Driver_Version"] = version
+        json.dump(json_object, openfile, indent=4)
+
+
+def clean():
+    remove("./driver.zip")
+    return
 
 
 def compare_and_download():
+    check_file()
     local_version = get_local_driver_version()
     remote_version = get_driver_version()
-    remote_download_link = get_download_link(remote_version)
 
-    if local_version == "":
-        print(remote_download_link)
-    elif local_version.split(".")[0] != remote_version.split(".")[0]:
-        print(remote_download_link)
+    if local_version.split(".")[0] == remote_version.split(".")[0]:
+        print("chrome driver up to date")
+        return
+
+    remote_download_link = get_download_link(remote_version)
 
     urlretrieve(remote_download_link, "./driver.zip")
 
     with ZipFile("./driver.zip", "r") as zipObj:
         zipObj.extractall()
+    update_version(remote_version)
+    clean()
