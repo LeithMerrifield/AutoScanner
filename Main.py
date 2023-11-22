@@ -13,6 +13,7 @@ from kivy.uix.screenmanager import ScreenManager
 from src.LoginScreen import LoginScreen
 from src.ScannerScreen import ScannerScreen
 from src.SettingsScreen import SettingsScreen
+from src.CheckDriver import compare_and_download as driver_update
 from kivy.base import Builder
 
 Builder.load_file("./src/kv/Login.kv")
@@ -51,4 +52,9 @@ def Bypass_Reopen_Tabs():
 
 if __name__ == "__main__":
     Bypass_Reopen_Tabs()
+    try:
+        driver_update()
+    except KeyError:
+        # setting file doesn't exist
+        pass
     LoginApp().run()
