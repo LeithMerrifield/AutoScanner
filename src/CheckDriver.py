@@ -5,10 +5,13 @@ from os import remove
 from zipfile import ZipFile
 from urllib.request import urlretrieve
 
+LATEST_RELEASE_STABLE = (
+    "curl https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE"
+)
 
-def get_driver_version():
-    ps = "curl https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE"
-    return subprocess.check_output(ps, shell=True).decode("utf-8")
+
+def get_webpage_content(url):
+    return subprocess.check_output(url, shell=True).decode("utf-8")
 
 
 def get_download_link(version_number):
@@ -29,34 +32,39 @@ def get_download_link(version_number):
     return link
 
 
-def check_file():
-    if exists("./src/driver_version.json"):
+def check_file(filepath="./src/versions.json"):
+    if exists("./src/versions.json"):
         return
     else:
-        with open("./src/driver_version.json", "w", encoding="utf-8") as openfile:
-            template = {"Chrome_Driver_Version": ""}
+        with open(filepath, "w", encoding="utf-8") as openfile:
+            template = {"Chrome_Driver_Version": "", "App_Version": ""}
             json.dump(template, openfile, indent=4)
     return
 
 
-def get_local_driver_version():
+def unpack_zip(filepath, destination):
+    with ZipFile(filepath, "r") as zipObj:
+        zipObj.extractall(destination)
+
+
+def get_local_version(version_type, filepath="./src/versions.json"):
     version = None
     try:
-        with open("./src/driver_version.json", "r", encoding="utf-8") as openfile:
+        with open(filepath, "r", encoding="utf-8") as openfile:
             json_object = json.load(openfile)
-            version = json_object["Chrome_Driver_Version"]
-    except KeyError:
+            version = json_object[version_type]
+    except:
         version = ""
     return version
 
 
-def update_version(version):
+def update_version(version, version_type, filepath="./src/versions.json"):
     json_object = None
-    with open("./src/driver_version.json", "r", encoding="utf-8") as openfile:
+    with open(filepath, "r", encoding="utf-8") as openfile:
         json_object = json.load(openfile)
 
-    with open("./src/driver_version.json", "w", encoding="utf-8") as openfile:
-        json_object["Chrome_Driver_Version"] = version
+    with open(filepath, "w", encoding="utf-8") as openfile:
+        json_object[version_type] = version
         json.dump(json_object, openfile, indent=4)
 
 
@@ -65,10 +73,15 @@ def clean():
     return
 
 
+def get_remote_zip(url, filename):
+    urlretrieve(url, filename)
+    return
+
+
 def compare_and_download():
     check_file()
-    local_version = get_local_driver_version()
-    remote_version = get_driver_version()
+    local_version = get_local_version("Chrome_Driver_Version")
+    remote_version = get_webpage_content(LATEST_RELEASE_STABLE)
 
     if local_version.split(".")[0] == remote_version.split(".")[0]:
         print("chrome driver up to date")
@@ -76,9 +89,9 @@ def compare_and_download():
 
     remote_download_link = get_download_link(remote_version)
 
-    urlretrieve(remote_download_link, "./driver.zip")
+    get_remote_zip(remote_download_link, "./driver.zip")
 
-    with ZipFile("./driver.zip", "r") as zipObj:
-        zipObj.extractall()
-    update_version(remote_version)
+    unpack_zip("./driver.zip", "./")
+
+    update_version(remote_version, "Chrome_Driver_Version")
     clean()
