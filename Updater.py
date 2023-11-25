@@ -38,7 +38,6 @@ def delete_contents():
 
 def move_from_temp():
     temp_destination = tempfile.gettempdir()
-    file_names = os.listdir(temp_destination + "/Autoscanner")
     shutil.copytree(
         temp_destination + "/Autoscanner",
         "./Scanner",
