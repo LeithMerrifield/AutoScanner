@@ -1,14 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
-from kivy_deps import sdl2, glew
+
 
 block_cipher = None
 
 
 a = Analysis(
-    ['Main.py'],
+    ['Updater.py'],
     pathex=[],
     binaries=[],
-    datas=[('src/kv/','./src/kv/'),('src/images/','src/images/'),('src/settings.json','src/'),('src/versions.json','src/versions.json')],
+    datas=[],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -24,28 +24,21 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
     [],
-    exclude_binaries=True,
-    name='Autoscanner',
+    name='Updater',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,
-    icon='.\\src\\images\FireIcon.png',
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-)
-coll = COLLECT(
-    exe,*[Tree(p) for p in (sdl2.dep_bins + glew.dep_bins)],
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='Autoscanner',
 )
