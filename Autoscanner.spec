@@ -8,7 +8,7 @@ a = Analysis(
     ['Main.py'],
     pathex=[],
     binaries=[],
-    datas=[('src/kv/','./src/kv/'),('src/images/','src/images/'),('src/settings.json','src/'),('src/versions.json','src/versions.json')],
+    datas=[('src/kv/','./src/kv/'),('src/images/','src/images/'),('src/settings.json','src/'),('src/versions.json','src/')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
