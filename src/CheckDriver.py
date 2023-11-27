@@ -4,6 +4,7 @@ from os.path import exists
 from os import remove
 from zipfile import ZipFile
 from urllib.request import urlretrieve
+import shutil
 
 LATEST_RELEASE_STABLE = (
     "curl https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE"
@@ -43,8 +44,7 @@ def check_file(filepath="./src/versions.json"):
 
 
 def unpack_zip(filepath, destination):
-    with ZipFile(filepath, "r") as zipObj:
-        zipObj.extractall(destination)
+    shutil.unpack_archive(filepath, destination, "zip")
 
 
 def get_local_version(version_type, filepath="./src/versions.json"):
