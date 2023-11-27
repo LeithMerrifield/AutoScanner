@@ -7,6 +7,7 @@ import os
 import tempfile
 from time import sleep
 from zipfile import ZipFile
+from win32api import GetLongPathName
 
 LATEST_APP_VERSION = "curl https://leithmerrifield.github.io/Autoscanner/LATESTVERSION"
 DOWNLOAD_LIST = "curl https://leithmerrifield.github.io/Autoscanner/downloads.json"
@@ -37,10 +38,10 @@ def delete_contents():
 
 
 def move_from_temp():
-    temp_destination = tempfile.gettempdir()
+    temp_destination = GetLongPathName(tempfile.gettempdir())
     shutil.copytree(
         temp_destination + "/Autoscanner",
-        "./Scanner",
+        "./",
         dirs_exist_ok=True,
     )
 
@@ -131,12 +132,14 @@ def update():
 
     # get download link of newest version
     # get zip
-    temp_destination = tempfile.gettempdir()
+    temp_destination = GetLongPathName(tempfile.gettempdir())
     CheckDriver.get_remote_zip(
         get_app_download_link(remote_version), temp_destination + "/app.zip"
     )
     delete_contents()
-    CheckDriver.unpack_zip(temp_destination + "/app.zip", temp_destination)
+    CheckDriver.unpack_zip(
+        temp_destination + "/app.zip", temp_destination + "/Autoscanner"
+    )
     sleep(2)
     move_from_temp()
     CheckDriver.check_file(filepath="./Scanner/src/versions.json")
@@ -152,8 +155,6 @@ def update():
 
 try:
     update()
-    # delete_contents()
-    # os.unlink("./python3.dll")
 except Exception as e:
     with open("./log.txt", "w") as openfile:
         openfile.write(str(e))
