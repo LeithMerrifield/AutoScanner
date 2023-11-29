@@ -57,7 +57,7 @@ class MainWebDriver(object):
         self.order_list = []
         self.state = State()
         self.driver = None
-        self.pick_delay = 1
+        self.pick_delay = 1.5
 
     def read_links(self):
         """Reads settings json file and returns json object
