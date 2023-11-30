@@ -89,14 +89,6 @@ $shortcut.Save()
     with open("./shortcut.ps1", "w") as openfile:
         openfile.write(command)
     sleep(2)
-    subprocess.Popen(
-        [
-            "powershell.exe",
-            "-Command",
-            "&{Set-ExecutionPolicy Bypass -scope CurrentUser -Force}",
-        ],
-    )
-    sleep(1)
     subprocess.run(
         [
             "powershell.exe",
@@ -104,13 +96,6 @@ $shortcut.Save()
         ],
     )
     sleep(1)
-    subprocess.Popen(
-        [
-            "powershell.exe",
-            "-Command",
-            "&{Set-ExecutionPolicy Restricted -scope CurrentUser -Force}",
-        ],
-    )
     return
 
 

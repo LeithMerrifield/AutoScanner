@@ -57,6 +57,7 @@ class MainWebDriver(object):
         self.order_list = []
         self.state = State()
         self.driver = None
+        self.pick_delay = 1.5
 
     def read_links(self):
         """Reads settings json file and returns json object
@@ -100,22 +101,22 @@ class MainWebDriver(object):
         Args:
             order (str): Order Number
         """
-        sleep(2)
+        sleep(1)
         try:
             while True:
-                sleep(2)
+                sleep(self.pick_delay)
                 WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.FIRSTENTRY)
                 ).click()
-                sleep(2)
+                sleep(self.pick_delay)
                 WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.BINNUMBER)
                 ).click()
-                sleep(2)
+                sleep(self.pick_delay)
                 WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.ITEMNUMBER)
                 ).click()
-                sleep(3)
+                sleep(self.pick_delay)
 
                 amount = self.driver.find_element(
                     By.XPATH,
@@ -125,7 +126,7 @@ class MainWebDriver(object):
                 WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.QUANTITYINPUT)
                 ).send_keys(amount)
-                sleep(3)
+                sleep(self.pick_delay)
 
                 mark = self.driver.find_element(
                     By.XPATH, "/html/body/div/div/div[1]/div[2]/div[1]"
@@ -140,7 +141,7 @@ class MainWebDriver(object):
                 else:
                     break
 
-            sleep(3)
+            sleep(self.pick_delay)
             station = ""
             if "sau" in order.lower():
                 station = "PackStation03\n"
@@ -156,7 +157,7 @@ class MainWebDriver(object):
             WebDriverWait(self.driver, TIMOUT).until(
                 EC.element_to_be_clickable(Elements.NEXTORDERBUTTON)
             ).click()
-            sleep(2)
+            sleep(self.pick_delay)
         except exceptions.NoSuchWindowException:
             self.driver_closed()
             return
@@ -216,7 +217,7 @@ class MainWebDriver(object):
                         WebDriverWait(self.driver, 2).until(
                             EC.element_to_be_clickable(Elements.ORDERINPUTWITHERROR)
                         ).send_keys(order)
-                    except exceptions.TimeoutException:
+                    except exceptions.TimeoutException as e:
                         # At this point there is no text box to enter into at all
                         # so a refresh is in order
                         my_orders[idx] = f"{order} - Failed, Will Retry"
@@ -226,6 +227,8 @@ class MainWebDriver(object):
                         order_callback(order_list=newlist)
                         my_orders.append(order)
                         self.refresh()
+                        with open("./errorlog.txt", "a", encoding="UTF-8") as errorlog:
+                            errorlog.write("\n" + str(e))
                         continue
 
                 WebDriverWait(self.driver, 2).until(
@@ -246,8 +249,14 @@ class MainWebDriver(object):
                     self.pick(order)
                 except exceptions.TimeoutException:
                     continue
-                except:
+                except Exception as e:
                     # Pick Failed
+                    if (
+                        isinstance(e, exceptions.StaleElementReferenceException)
+                        or isinstance(e, exceptions.NoSuchElementException)
+                    ) and self.pick_delay < 3:
+                        self.pick_delay += 1
+
                     my_orders[idx] = f"{order} - Failed, Will Retry"
                     newlist = [e for e in my_orders]
                     newlist.append(f"{order}")
@@ -255,6 +264,10 @@ class MainWebDriver(object):
                     order_callback(order_list=newlist)
                     my_orders.append(order)
                     self.refresh()
+
+                    with open("./errorlog.txt", "a", encoding="UTF-8") as errorlog:
+                        errorlog.write("\n" + str(e))
+
                     continue
             except (
                 exceptions.NoSuchWindowException,
@@ -566,23 +579,23 @@ class MainWebDriver(object):
         WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.WMS)
         ).click()
-        sleep(2)
+        sleep(1)
         WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.WAREHOUSE)
         ).click()
-        sleep(2)
+        sleep(1)
         WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.PICKING)
         ).click()
-        sleep(2)
+        sleep(1)
         WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.SINGLEORDER)
         ).click()
-        sleep(2)
+        sleep(1)
         WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.RELEASEDORDER)
         ).click()
-        sleep(2)
+        sleep(1)
         WebDriverWait(self.driver, TIMOUT).until(
             EC.element_to_be_clickable(Elements.SALESORDER)
         ).click()
@@ -636,3 +649,15 @@ class MainWebDriver(object):
             By.XPATH, "/html/body/div/div/div[1]/div[2]/div[1]"
         )
         return mark.text
+
+    def wait_for_element(self, value: tuple = None, timeout: int = 30):
+        count = 0
+        while count < timeout:
+            try:
+                element = self.driver.find_element(by=value[0], value=value[1])
+                return element
+            except:
+                pass
+            count += 1
+            sleep(1)
+        raise exceptions.TimeoutException
