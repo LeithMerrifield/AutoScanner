@@ -1,4 +1,5 @@
 from time import sleep
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -21,6 +22,9 @@ from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from functools import partial
 import shutil
+from src.SQL import sqlobject as sql
+from numpy import floor
+from threading import Thread
 
 MOBILE_EMULATOR = "https://5230881.app.netsuite.com/app/site/hosting/scriptlet.nl?script=4662&deploy=1&compid=5230881"
 OFFICEURL = "https://www.office.com"
@@ -58,6 +62,9 @@ class MainWebDriver(object):
         self.state = State()
         self.driver = None
         self.pick_delay = 1.5
+        self.sql = sql()
+        self.database_buffer = []
+        self.author = ""
 
     def read_links(self):
         """Reads settings json file and returns json object
@@ -92,6 +99,31 @@ class MainWebDriver(object):
                 service=chrome_service, chrome_options=chrome_options
             )
 
+        with open(".\src\database.json", "r") as openfile:
+            json_object = json.load(openfile)
+            self.author = json_object["username"].split(".")[0]
+
+    def time_difference(self, timestamp1, timestamp2):
+        floored = floor(timestamp2 - timestamp1)
+        seconds = floored % 60
+        minutes = (floored - seconds) / 60
+        seconds_string = None
+        minutes_string = None
+        minutes = int(minutes)
+        seconds = int(seconds)
+
+        if minutes < 10:
+            minutes_string = f"0{minutes}"
+        else:
+            minutes_string = f"{minutes}"
+
+        if seconds < 10:
+            seconds_string = f"0{seconds}"
+        else:
+            seconds_string = f"{seconds}"
+
+        return f"00:{minutes_string}:{seconds_string}"
+
     def pick(self, order):
         """
         Continually Crawls through individual picking of each item untill it detects
@@ -103,6 +135,7 @@ class MainWebDriver(object):
         """
         sleep(1)
         try:
+            item_list = {}
             while True:
                 sleep(self.pick_delay)
                 WebDriverWait(self.driver, TIMOUT).until(
@@ -158,6 +191,9 @@ class MainWebDriver(object):
                 EC.element_to_be_clickable(Elements.NEXTORDERBUTTON)
             ).click()
             sleep(self.pick_delay)
+
+            # return dictionary converted to string using json
+            return json.dumps(item_list)
         except exceptions.NoSuchWindowException:
             self.driver_closed()
             return
@@ -190,13 +226,16 @@ class MainWebDriver(object):
         my_orders.reverse()
 
         for idx, order in enumerate(my_orders):
-            sleep(2)
+            date = datetime.now()
+            timenow = f"{date.year}-{date.day}-{date.month} {date.hour}:{date.minute}:{date.second}"
+            timestamp1 = datetime.timestamp(date)
+            item_list = None
 
+            sleep(2)
             my_orders[idx] = f"{order} - Started"
             newlist = [e for e in my_orders]
             newlist.reverse()
             order_callback(order_list=newlist)
-
             try:
                 # Checks for error popup that would change xpath of input
                 # probably could run a check for if the input exists at xpath
@@ -246,7 +285,7 @@ class MainWebDriver(object):
                         if i == 4:
                             raise exceptions.TimeoutException
 
-                    self.pick(order)
+                    item_list = self.pick(order)
                 except exceptions.TimeoutException:
                     continue
                 except Exception as e:
@@ -282,7 +321,19 @@ class MainWebDriver(object):
             newlist.reverse()
             order_callback(order_list=newlist)
 
+            # finalise entry to database
+            timestamp2 = datetime.timestamp(datetime.now())
+            difference = self.time_difference(timestamp1, timestamp2)
+            self.database_buffer.append((timenow, difference, self.author, item_list))
+
+        Thread(
+            target=self.sql.insert_many_database,
+            args=tuple(self.database_buffer),
+            daemon=True,
+        )
+        self.database_buffer = []
         status_flag[0] = True
+
         print("Scanning Complete \n Start Again\n")
 
     def refresh(self, force_refresh_flag=None, status_flag=None, login_callback=None):
