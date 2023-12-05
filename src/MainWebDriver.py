@@ -61,7 +61,7 @@ class MainWebDriver(object):
         self.order_list = []
         self.state = State()
         self.driver = None
-        self.pick_delay = 1.5
+        self.pick_delay = 2
         self.sql = sql()
         self.database_buffer = []
         self.author = ""
@@ -136,6 +136,7 @@ class MainWebDriver(object):
         sleep(1)
         try:
             item_list = {}
+            count = 0
             while True:
                 sleep(self.pick_delay)
                 WebDriverWait(self.driver, TIMOUT).until(
@@ -146,6 +147,9 @@ class MainWebDriver(object):
                     EC.element_to_be_clickable(Elements.BINNUMBER)
                 ).click()
                 sleep(self.pick_delay)
+                SKU = self.driver.find_element(
+                    By.ID, "singleorerPicking_itemScan_itemToPick"
+                ).text
                 WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.ITEMNUMBER)
                 ).click()
@@ -155,6 +159,7 @@ class MainWebDriver(object):
                     By.XPATH,
                     "//*[@id='singleorerPicking_quantityScan_lblQuantityRemaining']",
                 ).text.split(" ")[0]
+                QTY = amount
                 amount += "\n"
                 WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.QUANTITYINPUT)
@@ -166,8 +171,9 @@ class MainWebDriver(object):
                 )
 
                 print(mark.text.lower() + " : " + "Pick Task Complete".lower())
-
+                item_list[f"Item {count}"] = [str(SKU), str(QTY)]
                 if mark.text.lower() == "Pick Task Complete".lower():
+                    count += 1
                     WebDriverWait(self.driver, TIMOUT).until(
                         EC.element_to_be_clickable(Elements.NEXTPICKTASK)
                     ).click()
@@ -326,11 +332,12 @@ class MainWebDriver(object):
             difference = self.time_difference(timestamp1, timestamp2)
             self.database_buffer.append((timenow, difference, self.author, item_list))
 
+        # self.sql.insert_many_database(tuple(self.database_buffer))
         Thread(
             target=self.sql.insert_many_database,
             args=tuple(self.database_buffer),
             daemon=True,
-        )
+        ).start()
         self.database_buffer = []
         status_flag[0] = True
 

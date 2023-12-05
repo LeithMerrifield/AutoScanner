@@ -17,19 +17,19 @@ class sqlobject:
         self.PASSWORD1 = b""
         self.PASSWORD2 = b""
         password = self.decrypt_pass()
-        connectionString = f"Driver={{ODBC Driver 18 for SQL Server}};Server=tcp:autoscanner-database.database.windows.net,1433;Database=ScannerTelemetry;Uid=leith;Pwd={password};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"
+        connectionString = f"Driver={{ODBC Driver 18 for SQL Server}};Server=tcp:autoscanner-database.database.windows.net,1433;Database=ScannerTelemetry;Uid=leith;Pwd={{{password}}};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"
         self.conn = pyodbc.connect(connectionString)
         self.cursor = self.conn.cursor()
 
     def decrypt_pass(self):
         ip = subprocess.check_output("curl icanhazip.com").strip().decode()
-        salt = "stinkier"
-        salt2 = "stinky"
-        keystring = ip + salt + ip
-        flag = True
+        padding = "stinkier"
+        padding2 = "stinky"
+        keystring = ip + padding + ip
+        flag = False
 
         if len(keystring) != 32:
-            keystring = ip + salt2 + ip
+            keystring = ip + padding2 + ip
             flag = True
 
         key = base64.urlsafe_b64encode(keystring.encode())
@@ -57,8 +57,3 @@ class sqlobject:
 
     def commit_to_database(self):
         self.cursor.commit()
-
-
-test = sqlobject()
-
-print(test.decrypt_pass())
