@@ -2,6 +2,7 @@ import pyodbc
 from cryptography.fernet import Fernet
 import base64
 import subprocess
+from threading import Thread
 
 # InitialDate = "2023-12-02 23:21:01"
 # CompletionTime = "00:05:11"
@@ -18,7 +19,12 @@ class sqlobject:
         self.PASSWORD2 = b""
         password = self.decrypt_pass()
         connectionString = f"Driver={{ODBC Driver 18 for SQL Server}};Server=tcp:autoscanner-database.database.windows.net,1433;Database=ScannerTelemetry;Uid=leith;Pwd={{{password}}};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"
-        self.conn = pyodbc.connect(connectionString)
+        self.conn = None
+        self.cursor = None
+        Thread(target=self.connect, args=connectionString, daemon=True).start()
+
+    def connect(self, connection_string):
+        self.conn = pyodbc.connect(connection_string)
         self.cursor = self.conn.cursor()
 
     def decrypt_pass(self):
