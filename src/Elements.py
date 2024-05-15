@@ -12,7 +12,7 @@ NETSUITE_ENVIRONMENT = (
     By.XPATH,
     "/html/body/div[2]/div[3]/div/table/tbody/tr[2]/td/table/tbody/tr[2]/td[3]/a",
 )
-WMS = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div/div[2]/div[1]/img")
+WMS = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div/div[2]/div[2]/img")
 WAREHOUSE = (
     By.XPATH,
     "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]/div/div/div[6]/div[1]/table/tbody/tr[2]/td",
@@ -32,27 +32,26 @@ ORDERINPUTWITHERROR = (
 )
 ENTERORDER = (
     By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div[3]/button",
+    "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div/div[3]/button",
 )
 
 FIRSTENTRY = (
     By.XPATH,
     "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/div/div/div[6]/div[1]/table/tbody/tr[1]",
 )
-BINNUMBER = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/span")
+BINNUMBER = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/div/span")
 ITEMNUMBER = (
     By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/span",
+    "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/div/span",
 )
-QUANTITY = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/span")
-
+QUANTITYAMOUNT = (By.XPATH,"/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/div/span",)
 QUANTITYINPUT = (
     By.XPATH,
     "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[4]/div/div[2]/div/div/input",
 )
 NEXTPICKTASK = (
     By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div[3]/button",
+    "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div/div[3]/button",
 )
 STATIONINPUT = (
     By.XPATH,
@@ -60,7 +59,7 @@ STATIONINPUT = (
 )
 NEXTORDERBUTTON = (
     By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div[2]/button",
+    "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div/div[2]/button",
 )
 
 SALESORDERREFRESH = "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]"

@@ -1,5 +1,5 @@
 {
-    "Netsuite_SSO": "https://launcher.myapps.microsoft.com/api/signin/fd4bc304-663f-4e7b-9245-93596454cc99?tenantId=7261aa19-728c-457c-bb6e-a31f9a21516d",
+    "Netsuite_SSO": "https://launcher.myapps.microsoft.com/api/signin/fe4da155-1607-4df4-a7aa-c8fa934170a5?tenantId=7261aa19-728c-457c-bb6e-a31f9a21516d",
     "Netsuite": "https://5230881.app.netsuite.com/app/center/card.nl?sc=-29&whence=",
     "Chrome_Driver": [
         "./chromedriver-win64/chromedriver.exe",

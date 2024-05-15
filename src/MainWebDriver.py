@@ -118,14 +118,12 @@ class MainWebDriver(object):
                 ).click()
                 sleep(self.pick_delay)
 
-                amount = self.driver.find_element(
-                    By.XPATH,
-                    "//*[@id='singleorerPicking_quantityScan_lblQuantityRemaining']",
-                ).text.split(" ")[0]
+                amount = self.driver.find_element(Elements.QUANTITYAMOUNT[0],Elements.QUANTITYAMOUNT[1]).text.split(" ")[0]
                 amount += "\n"
                 WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.QUANTITYINPUT)
                 ).send_keys(amount)
+                
                 sleep(self.pick_delay)
 
                 mark = self.driver.find_element(
