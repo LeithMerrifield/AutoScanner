@@ -1,69 +1,98 @@
 from selenium.webdriver.common.by import By
-
-USERNAMEFIELD = (By.ID, "i0116")
-PASSWORDFIELD = (By.ID, "i0118")
-NEXTBUTTON = (By.ID, "idSIButton9")
-NOBUTTON = (By.ID, "idBtn_Back")
+import json
 
 
-NETSUITEHOMEPAGE = (By.ID, "uif53")  # netsuite homepage identifier?
+class ElementClass:
+    def __init__(self) -> None:
+        self.element_error_flag = False
+        self.elements = self.read_elements_from_json()
 
-NETSUITE_ENVIRONMENT = (
-    By.XPATH,
-    "/html/body/div[2]/div[3]/div/table/tbody/tr[2]/td/table/tbody/tr[2]/td[3]/a",
-)
-WMS = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div/div[2]/div[2]/img")
-WAREHOUSE = (
-    By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]/div/div/div[6]/div[1]/table/tbody/tr[2]/td",
-)
-PICKING = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]")
-SINGLEORDER = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]")
-RELEASEDORDER = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]")
-SALESORDER = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]")
+        if self.element_error_flag:
+            return
 
-ORDERINPUT = (
-    By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]/div[2]/input",
-)
-ORDERINPUTWITHERROR = (
-    By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[1]/div[3]/div[1]/div[2]/input",
-)
-ENTERORDER = (
-    By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div/div[3]/button",
-)
+        self.assign_ui_elements(self.elements)
 
-FIRSTENTRY = (
-    By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/div/div/div[6]/div[1]/table/tbody/tr[1]",
-)
-BINNUMBER = (By.XPATH, "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/div/span")
-ITEMNUMBER = (
-    By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/div/span",
-)
-QUANTITYAMOUNT = (By.XPATH,"/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/div/span",)
-QUANTITYINPUT = (
-    By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[4]/div/div[2]/div/div/input",
-)
-NEXTPICKTASK = (
-    By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div/div[3]/button",
-)
-STATIONINPUT = (
-    By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]/div[2]/input",
-)
-NEXTORDERBUTTON = (
-    By.XPATH,
-    "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div/div[2]/button",
-)
+    def read_elements_from_json(self):
+        try:
+            with open(r".\src\elements.json", "r", encoding="utf-8") as openfile:
+                return json.load(openfile)
+        except FileNotFoundError:
+            self.element_error_flag = True
 
-SALESORDERREFRESH = "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]"
-BACKBUTTONREFRESH = "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div[1]/button"
+    def assign_ui_elements(self, dict):
+        self.USERNAMEFIELD = self.elements["USERNAMEFIELD"]
+        self.PASSWORDFIELD = self.elements["PASSWORDFIELD"]
+        self.NEXTBUTTON = self.elements["NEXTBUTTON"]
+        self.NOBUTTON = self.elements["NOBUTTON"]
+        self.NETSUITEHOMEPAGE = self.elements[
+            "NETSUITEHOMEPAGE"
+        ]  # netsuite homepage identifier?
+        self.NETSUITE_ENVIRONMENT = (
+            self.elements["NETSUITE_ENVIRONMENT"][0],
+            self.elements["NETSUITE_ENVIRONMENT"][1],
+        )
+        self.WMS = (self.elements["WMS"][0], self.elements["WMS"][1])
+        self.WAREHOUSE = (self.elements["WAREHOUSE"][0], self.elements["WAREHOUSE"][1])
+        self.PICKING = (self.elements["PICKING"][0], self.elements["PICKING"][1])
+        self.SINGLEORDER = (
+            self.elements["SINGLEORDER"][0],
+            self.elements["SINGLEORDER"][1],
+        )
+        self.RELEASEDORDER = (
+            self.elements["RELEASEDORDER"][0],
+            self.elements["RELEASEDORDER"][1],
+        )
+        self.SALESORDER = (
+            self.elements["SALESORDER"][0],
+            self.elements["SALESORDER"][1],
+        )
+        self.ORDERINPUT = (
+            self.elements["ORDERINPUT"][0],
+            self.elements["ORDERINPUT"][1],
+        )
+        self.ORDERINPUTWITHERROR = (
+            self.elements["ORDERINPUTWITHERROR"][0],
+            self.elements["ORDERINPUTWITHERROR"][1],
+        )
+        self.ENTERORDER = (
+            self.elements["ENTERORDER"][0],
+            self.elements["ENTERORDER"][1],
+        )
+        self.FIRSTENTRY = (
+            self.elements["FIRSTENTRY"][0],
+            self.elements["FIRSTENTRY"][1],
+        )
+        self.BINNUMBER = (self.elements["BINNUMBER"][0], self.elements["BINNUMBER"][1])
+        self.ITEMNUMBER = (
+            self.elements["ITEMNUMBER"][0],
+            self.elements["ITEMNUMBER"][1],
+        )
+        self.QUANTITYAMOUNT = (
+            self.elements["QUANTITYAMOUNT"][0],
+            self.elements["QUANTITYAMOUNT"][1],
+        )
+        self.QUANTITYINPUT = (
+            self.elements["QUANTITYINPUT"][0],
+            self.elements["QUANTITYINPUT"][1],
+        )
+        self.NEXTPICKTASK = (
+            self.elements["NEXTPICKTASK"][0],
+            self.elements["NEXTPICKTASK"][1],
+        )
+        self.STATIONINPUT = (
+            self.elements["STATIONINPUT"][0],
+            self.elements["STATIONINPUT"][1],
+        )
+        self.NEXTORDERBUTTON = (
+            self.elements["NEXTORDERBUTTON"][0],
+            self.elements["NEXTORDERBUTTON"][1],
+        )
+
+        SALESORDERREFRESH = "/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]"
+        BACKBUTTONREFRESH = (
+            "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div[1]/button"
+        )
+
 
 STAGE = [
     "Select Application",

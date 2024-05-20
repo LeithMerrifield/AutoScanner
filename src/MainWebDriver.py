@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.common import exceptions
 from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.chrome.options import Options
-from src import Elements
+from src.Elements import ElementClass
 from src.state import State
 from src.CheckDriver import compare_and_download as update_driver
 from selenium.webdriver.chrome.service import (
@@ -57,7 +57,10 @@ class MainWebDriver(object):
         self.order_list = []
         self.state = State()
         self.driver = None
+        self.continue_program = True
         self.pick_delay = 1.5
+        self.elements = ElementClass()
+        self.check_if_elements_exist()
 
     def read_links(self):
         """Reads settings json file and returns json object
@@ -92,6 +95,18 @@ class MainWebDriver(object):
                 service=chrome_service, chrome_options=chrome_options
             )
 
+    def check_if_elements_exist(self):
+        if self.elements.element_error_flag:
+            Clock.schedule_once(
+                partial(
+                    self.test_popup,
+                    "elements.json doesn't exist",
+                    "reinstall autoscanner",
+                ),
+                1,
+            )
+            self.continue_program = False
+
     def pick(self, order):
         """
         Continually Crawls through individual picking of each item untill it detects
@@ -106,26 +121,27 @@ class MainWebDriver(object):
             while True:
                 sleep(self.pick_delay)
                 WebDriverWait(self.driver, TIMOUT).until(
-                    EC.element_to_be_clickable(Elements.FIRSTENTRY)
+                    EC.element_to_be_clickable(self.elements.FIRSTENTRY)
                 ).click()
                 sleep(self.pick_delay)
                 WebDriverWait(self.driver, TIMOUT).until(
-                    EC.element_to_be_clickable(Elements.BINNUMBER)
+                    EC.element_to_be_clickable(self.elements.BINNUMBER)
                 ).click()
                 sleep(self.pick_delay)
                 WebDriverWait(self.driver, TIMOUT).until(
-                    EC.element_to_be_clickable(Elements.ITEMNUMBER)
+                    EC.element_to_be_clickable(self.elements.ITEMNUMBER)
                 ).click()
                 sleep(self.pick_delay)
 
-
-                amount = self.driver.find_element(Elements.QUANTITYAMOUNT[0],Elements.QUANTITYAMOUNT[1]).text.split(" ")[0]
+                amount = self.driver.find_element(
+                    self.elements.QUANTITYAMOUNT[0], self.elements.QUANTITYAMOUNT[1]
+                ).text.split(" ")[0]
                 amount += "\n"
                 sleep(1)
                 WebDriverWait(self.driver, TIMOUT).until(
-                    EC.element_to_be_clickable(Elements.QUANTITYINPUT)
+                    EC.element_to_be_clickable(self.elements.QUANTITYINPUT)
                 ).send_keys(amount)
-                
+
                 sleep(self.pick_delay)
 
                 mark = self.driver.find_element(
@@ -136,7 +152,7 @@ class MainWebDriver(object):
 
                 if mark.text.lower() == "Pick Task Complete".lower():
                     WebDriverWait(self.driver, TIMOUT).until(
-                        EC.element_to_be_clickable(Elements.NEXTPICKTASK)
+                        EC.element_to_be_clickable(self.elements.NEXTPICKTASK)
                     ).click()
                 else:
                     break
@@ -149,13 +165,13 @@ class MainWebDriver(object):
                 station = "PackStation02\n"
 
             WebDriverWait(self.driver, TIMOUT).until(
-                EC.element_to_be_clickable(Elements.STATIONINPUT)
+                EC.element_to_be_clickable(self.elements.STATIONINPUT)
             ).send_keys(station)
 
             sleep(3)
 
             WebDriverWait(self.driver, TIMOUT).until(
-                EC.element_to_be_clickable(Elements.NEXTORDERBUTTON)
+                EC.element_to_be_clickable(self.elements.NEXTORDERBUTTON)
             ).click()
             sleep(self.pick_delay)
         except exceptions.NoSuchWindowException:
@@ -203,19 +219,23 @@ class MainWebDriver(object):
                 # but I may aswell do it this way
                 try:
                     WebDriverWait(self.driver, 2).until(
-                        EC.element_to_be_clickable(Elements.ORDERINPUT)
+                        EC.element_to_be_clickable(self.elements.ORDERINPUT)
                     ).clear()
                     WebDriverWait(self.driver, 2).until(
-                        EC.element_to_be_clickable(Elements.ORDERINPUT)
+                        EC.element_to_be_clickable(self.elements.ORDERINPUT)
                     ).send_keys(order)
                 except exceptions.TimeoutException:
                     # Timeout in finding the normal textbox to enter the order into
                     try:
                         WebDriverWait(self.driver, 2).until(
-                            EC.element_to_be_clickable(Elements.ORDERINPUTWITHERROR)
+                            EC.element_to_be_clickable(
+                                self.elements.ORDERINPUTWITHERROR
+                            )
                         ).clear()
                         WebDriverWait(self.driver, 2).until(
-                            EC.element_to_be_clickable(Elements.ORDERINPUTWITHERROR)
+                            EC.element_to_be_clickable(
+                                self.elements.ORDERINPUTWITHERROR
+                            )
                         ).send_keys(order)
                     except exceptions.TimeoutException as e:
                         # At this point there is no text box to enter into at all
@@ -232,7 +252,7 @@ class MainWebDriver(object):
                         continue
 
                 WebDriverWait(self.driver, 2).until(
-                    EC.element_to_be_clickable(Elements.ENTERORDER)
+                    EC.element_to_be_clickable(self.elements.ENTERORDER)
                 ).click()
 
                 try:
@@ -457,10 +477,10 @@ class MainWebDriver(object):
             try:
                 sleep(2)
                 self.driver.find_element(
-                    Elements.USERNAMEFIELD[0], Elements.USERNAMEFIELD[1]
+                    self.elements.USERNAMEFIELD[0], self.elements.USERNAMEFIELD[1]
                 ).send_keys(username)
                 WebDriverWait(self.driver, TIMOUT).until(
-                    EC.element_to_be_clickable(Elements.NEXTBUTTON)
+                    EC.element_to_be_clickable(self.elements.NEXTBUTTON)
                 ).click()
                 sleep(1)
             except exceptions.NoSuchElementException:
@@ -486,11 +506,11 @@ class MainWebDriver(object):
                 pass
 
             WebDriverWait(self.driver, TIMOUT).until(
-                EC.element_to_be_clickable(Elements.PASSWORDFIELD)
+                EC.element_to_be_clickable(self.elements.PASSWORDFIELD)
             ).send_keys(password)
 
             WebDriverWait(self.driver, TIMOUT).until(
-                EC.element_to_be_clickable(Elements.NEXTBUTTON)
+                EC.element_to_be_clickable(self.elements.NEXTBUTTON)
             ).click()
 
             try:
@@ -511,21 +531,21 @@ class MainWebDriver(object):
                 pass
 
             WebDriverWait(self.driver, TIMOUT).until(
-                EC.element_to_be_clickable(Elements.NOBUTTON)
+                EC.element_to_be_clickable(self.elements.NOBUTTON)
             ).click()
 
             count = 0
             while count < TIMOUT:
                 try:
                     WebDriverWait(self.driver, 1).until(
-                        EC.element_to_be_clickable(Elements.NETSUITE_ENVIRONMENT)
+                        EC.element_to_be_clickable(self.elements.NETSUITE_ENVIRONMENT)
                     ).click()
                     break
                 except:
                     pass
                 try:
                     WebDriverWait(self.driver, 1).until(
-                        EC.element_to_be_clickable(Elements.NETSUITEHOMEPAGE)
+                        EC.element_to_be_clickable(self.elements.NETSUITEHOMEPAGE)
                     ).click()
                     break
                 except:
@@ -577,27 +597,27 @@ class MainWebDriver(object):
             pass
         sleep(1)
         WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(Elements.WMS)
+            EC.element_to_be_clickable(self.elements.WMS)
         ).click()
         sleep(1)
         WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(Elements.WAREHOUSE)
+            EC.element_to_be_clickable(self.elements.WAREHOUSE)
         ).click()
         sleep(1)
         WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(Elements.PICKING)
+            EC.element_to_be_clickable(self.elements.PICKING)
         ).click()
         sleep(1)
         WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(Elements.SINGLEORDER)
+            EC.element_to_be_clickable(self.elements.SINGLEORDER)
         ).click()
         sleep(1)
         WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(Elements.RELEASEDORDER)
+            EC.element_to_be_clickable(self.elements.RELEASEDORDER)
         ).click()
         sleep(1)
         WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(Elements.SALESORDER)
+            EC.element_to_be_clickable(self.elements.SALESORDER)
         ).click()
 
         self.state.change_state(self.identify_page())

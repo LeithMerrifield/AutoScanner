@@ -96,6 +96,9 @@ class LoginScreen(Screen):
         # if "@bollebrands.com" not in username.lower() or password == "":
         #    return
 
+        if not self.driver.continue_program:
+            return
+
         if self.ids.login_checkbox.active:
             self.store_login(username, password)
 
