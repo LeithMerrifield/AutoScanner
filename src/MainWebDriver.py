@@ -118,8 +118,10 @@ class MainWebDriver(object):
                 ).click()
                 sleep(self.pick_delay)
 
+
                 amount = self.driver.find_element(Elements.QUANTITYAMOUNT[0],Elements.QUANTITYAMOUNT[1]).text.split(" ")[0]
                 amount += "\n"
+                sleep(1)
                 WebDriverWait(self.driver, TIMOUT).until(
                     EC.element_to_be_clickable(Elements.QUANTITYINPUT)
                 ).send_keys(amount)
