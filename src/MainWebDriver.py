@@ -58,7 +58,7 @@ class MainWebDriver(object):
         self.state = State()
         self.driver = None
         self.continue_program = True
-        self.pick_delay = 1.5
+        self.pick_delay = 1
         self.elements = ElementClass()
         self.check_if_elements_exist()
 
@@ -119,64 +119,71 @@ class MainWebDriver(object):
         sleep(1)
         try:
             while True:
-                sleep(self.pick_delay)
-                WebDriverWait(self.driver, TIMOUT).until(
-                    EC.element_to_be_clickable(self.elements.FIRSTENTRY)
-                ).click()
-                sleep(self.pick_delay)
-                WebDriverWait(self.driver, TIMOUT).until(
-                    EC.element_to_be_clickable(self.elements.BINNUMBER)
-                ).click()
-                sleep(self.pick_delay)
-                WebDriverWait(self.driver, TIMOUT).until(
-                    EC.element_to_be_clickable(self.elements.ITEMNUMBER)
-                ).click()
-                sleep(self.pick_delay)
+                self.try_click_element(self.elements.FIRSTENTRY)
+                self.try_click_element(self.elements.BINNUMBER)
+                self.try_click_element(self.elements.ITEMNUMBER)
 
-                amount = self.driver.find_element(
-                    self.elements.QUANTITYAMOUNT[0], self.elements.QUANTITYAMOUNT[1]
-                ).text.split(" ")[0]
-                amount += "\n"
-                sleep(1)
-                WebDriverWait(self.driver, TIMOUT).until(
-                    EC.element_to_be_clickable(self.elements.QUANTITYINPUT)
-                ).send_keys(amount)
+                amount = self.try_return_text_element(
+                    self.elements.QUANTITYAMOUNT
+                ).split(" ")[0]
 
-                sleep(self.pick_delay)
+                self.try_send_keys_element(self.elements.QUANTITYINPUT, amount)
+                self.try_click_element(self.elements.QUANTITYBUTTON)
 
-                mark = self.driver.find_element(
-                    By.XPATH, "/html/body/div/div/div[1]/div[2]/div[1]"
+                mark = self.try_return_text_element(
+                    (By.XPATH, "/html/body/div/div/div[1]/div[2]/div[1]")
                 )
 
-                print(mark.text.lower() + " : " + "Pick Task Complete".lower())
-
-                if mark.text.lower() == "Pick Task Complete".lower():
-                    WebDriverWait(self.driver, TIMOUT).until(
-                        EC.element_to_be_clickable(self.elements.NEXTPICKTASK)
-                    ).click()
+                if mark.lower() == "Pick Task Complete".lower():
+                    self.try_click_element(self.elements.NEXTPICKTASK)
                 else:
                     break
 
             sleep(self.pick_delay)
             station = ""
             if "sau" in order.lower():
-                station = "PackStation03\n"
+                station = "PackStation03"
             else:
-                station = "PackStation02\n"
+                station = "PackStation02"
 
-            WebDriverWait(self.driver, TIMOUT).until(
-                EC.element_to_be_clickable(self.elements.STATIONINPUT)
-            ).send_keys(station)
-
-            sleep(3)
-
-            WebDriverWait(self.driver, TIMOUT).until(
-                EC.element_to_be_clickable(self.elements.NEXTORDERBUTTON)
-            ).click()
-            sleep(self.pick_delay)
+            self.try_send_keys_element(self.elements.STATIONINPUT, station)
+            self.try_click_element(self.elements.STATIONBUTTON)
+            self.try_click_element(self.elements.NEXTORDERBUTTON)
         except exceptions.NoSuchWindowException:
             self.driver_closed()
             return
+
+    def try_click_element(self, element, T=10):
+        for i in range(T):
+            try:
+                self.driver.find_element(element[0], element[1]).click()
+                sleep(self.pick_delay)
+                return
+            except Exception as e:
+                sleep(self.pick_delay)
+                continue
+        raise exceptions.NoSuchElementException
+
+    def try_send_keys_element(self, element, text):
+        for i in range(10):
+            try:
+                self.driver.find_element(element[0], element[1]).send_keys(text)
+                sleep(self.pick_delay)
+                return
+            except Exception as e:
+                sleep(self.pick_delay)
+                continue
+        raise exceptions.NoSuchElementException
+
+    def try_return_text_element(self, element):
+        for i in range(10):
+            try:
+                text = self.driver.find_element(element[0], element[1]).text
+                return text
+            except Exception as e:
+                sleep(self.pick_delay)
+                continue
+        raise exceptions.NoSuchElementException
 
     def scan(
         self,
@@ -303,7 +310,6 @@ class MainWebDriver(object):
             order_callback(order_list=newlist)
 
         status_flag[0] = True
-        print("Scanning Complete \n Start Again\n")
 
     def refresh(self, force_refresh_flag=None, status_flag=None, login_callback=None):
         """Re-orients the driver to the start of the mobile emulator website
@@ -474,19 +480,9 @@ class MainWebDriver(object):
         try:
             # Will check to see if the username field exists
             # It will exist if there is no previous data or data has been wiped
-            try:
-                sleep(2)
-                self.driver.find_element(
-                    self.elements.USERNAMEFIELD[0], self.elements.USERNAMEFIELD[1]
-                ).send_keys(username)
-                WebDriverWait(self.driver, TIMOUT).until(
-                    EC.element_to_be_clickable(self.elements.NEXTBUTTON)
-                ).click()
-                sleep(1)
-            except exceptions.NoSuchElementException:
-                # doesn't exist meaning there is an existing login
-                existing_login = True
-                pass
+            sleep(2)
+            self.try_send_keys_element(self.elements.USERNAMEFIELD, username)
+            self.try_click_element(self.elements.NEXTBUTTON)
 
             try:
                 self.driver.find_element(By.ID, "usernameError")
@@ -505,13 +501,8 @@ class MainWebDriver(object):
                 # means that the login passed
                 pass
 
-            WebDriverWait(self.driver, TIMOUT).until(
-                EC.element_to_be_clickable(self.elements.PASSWORDFIELD)
-            ).send_keys(password)
-
-            WebDriverWait(self.driver, TIMOUT).until(
-                EC.element_to_be_clickable(self.elements.NEXTBUTTON)
-            ).click()
+            self.try_send_keys_element(self.elements.PASSWORDFIELD, password)
+            self.try_click_element(self.elements.NEXTBUTTON)
 
             try:
                 self.driver.find_element(By.ID, "passwordError")
@@ -530,30 +521,10 @@ class MainWebDriver(object):
                 # means the password was successfully entered
                 pass
 
-            WebDriverWait(self.driver, TIMOUT).until(
-                EC.element_to_be_clickable(self.elements.NOBUTTON)
-            ).click()
+            self.try_click_element(self.elements.NOBUTTON)
 
-            count = 0
-            while count < TIMOUT:
-                try:
-                    WebDriverWait(self.driver, 1).until(
-                        EC.element_to_be_clickable(self.elements.NETSUITE_ENVIRONMENT)
-                    ).click()
-                    break
-                except:
-                    pass
-                try:
-                    WebDriverWait(self.driver, 1).until(
-                        EC.element_to_be_clickable(self.elements.NETSUITEHOMEPAGE)
-                    ).click()
-                    break
-                except:
-                    pass
+            self.try_click_element(self.elements.NETSUITE_ENVIRONMENT)
 
-                count += 1
-                # page doesn't exist and I think is linked to new accounts made with netsuite not having
-                # the ability to chose the netsuite environment.
             sleep(2)
 
             self.get_to_orders(login_flag=login_flag)
@@ -589,36 +560,16 @@ class MainWebDriver(object):
             self.driver.get(MOBILE_EMULATOR)
 
         try:
-            sleep(1)
-            self.driver.find_element(
-                By.XPATH, "/html/body/div/div/div[3]/button"
-            ).click()
+            self.try_click_element(self.elements.LASTSESSIONBUTTON, 2)
         except exceptions.NoSuchElementException:
             pass
-        sleep(1)
-        WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(self.elements.WMS)
-        ).click()
-        sleep(1)
-        WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(self.elements.WAREHOUSE)
-        ).click()
-        sleep(1)
-        WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(self.elements.PICKING)
-        ).click()
-        sleep(1)
-        WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(self.elements.SINGLEORDER)
-        ).click()
-        sleep(1)
-        WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(self.elements.RELEASEDORDER)
-        ).click()
-        sleep(1)
-        WebDriverWait(self.driver, TIMOUT).until(
-            EC.element_to_be_clickable(self.elements.SALESORDER)
-        ).click()
+
+        self.try_click_element(self.elements.WMS)
+        self.try_click_element(self.elements.WAREHOUSE)
+        self.try_click_element(self.elements.PICKING)
+        self.try_click_element(self.elements.SINGLEORDER)
+        self.try_click_element(self.elements.RELEASEDORDER)
+        self.try_click_element(self.elements.SALESORDER)
 
         self.state.change_state(self.identify_page())
         if login_flag is None:
