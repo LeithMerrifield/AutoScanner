@@ -31,6 +31,10 @@ class ElementClass:
             self.elements["NETSUITE_ENVIRONMENT"][0],
             self.elements["NETSUITE_ENVIRONMENT"][1],
         )
+        self.LASTSESSIONBUTTON = (
+            self.elements["LASTSESSIONBUTTON"][0],
+            self.elements["LASTSESSIONBUTTON"][1],
+        )
         self.WMS = (self.elements["WMS"][0], self.elements["WMS"][1])
         self.WAREHOUSE = (self.elements["WAREHOUSE"][0], self.elements["WAREHOUSE"][1])
         self.PICKING = (self.elements["PICKING"][0], self.elements["PICKING"][1])
@@ -75,6 +79,10 @@ class ElementClass:
             self.elements["QUANTITYINPUT"][0],
             self.elements["QUANTITYINPUT"][1],
         )
+        self.QUANTITYBUTTON = (
+            self.elements["QUANTITYBUTTON"][0],
+            self.elements["QUANTITYBUTTON"][1],
+        )
         self.NEXTPICKTASK = (
             self.elements["NEXTPICKTASK"][0],
             self.elements["NEXTPICKTASK"][1],
@@ -82,6 +90,10 @@ class ElementClass:
         self.STATIONINPUT = (
             self.elements["STATIONINPUT"][0],
             self.elements["STATIONINPUT"][1],
+        )
+        self.STATIONBUTTON = (
+            self.elements["STATIONBUTTON"][0],
+            self.elements["STATIONBUTTON"][1],
         )
         self.NEXTORDERBUTTON = (
             self.elements["NEXTORDERBUTTON"][0],

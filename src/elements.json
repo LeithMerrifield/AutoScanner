@@ -5,6 +5,7 @@
     "NOBUTTON" :["id","idBtn_Back"],
     "NETSUITEHOMEPAGE" :["id","uif53"],
     "NETSUITE_ENVIRONMENT" :["xpath","/html/body/div[2]/div[3]/div/table/tbody/tr[2]/td/table/tbody/tr[2]/td[3]/a"],
+    "LASTSESSIONBUTTON" :["xpath","//html/body/div/div/div[3]/button"],
     "WMS" :["xpath","/html/body/div/div/div[2]/div[2]/div/div/div[2]/div[2]/img"],
     "WAREHOUSE" :["xpath","/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]/div/div/div[6]/div[1]/table/tbody/tr[2]/td"],
     "PICKING" :["xpath","/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]"],
@@ -19,8 +20,10 @@
     "ITEMNUMBER" :["xpath","/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/div/span"],
     "QUANTITYAMOUNT" :["xpath","/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[2]/div/span"],
     "QUANTITYINPUT" :["xpath","/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[4]/div/div[2]/div/div/input"],
+    "QUANTITYBUTTON" :["xpath", "/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div/div[7]/button"],
     "NEXTPICKTASK" :["xpath","/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div/div[3]/button"],
     "STATIONINPUT" :["xpath","/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]/div[2]/input"],
+    "STATIONBUTTON" :["xpath","/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div/div[2]/button"],
     "NEXTORDERBUTTON" :["xpath","/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div/div[2]/button"],
     "SALESORDERREFRESH" :["xpath","/html/body/div/div/div[2]/div[2]/div/div[1]/div[2]/div[1]"],
     "BACKBUTTONREFRESH" :["xpath","/html/body/div/div/div[2]/div[2]/div/div[2]/div[1]/div[1]/button"]
