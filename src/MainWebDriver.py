@@ -83,17 +83,9 @@ class MainWebDriver(object):
             chrome_options (Options): Set of options for the web driver
             manual_flag (bool): set to determine if self defined path to chrome driver
         """
-        if manual_flag:
-            service = ChromeService(
-                executable_path=chrome_service
-            )  # used to specify chrome driver
-            self.driver = webdriver.Chrome(
-                service=service, chrome_options=chrome_options
-            )
-        else:
-            self.driver = webdriver.Chrome(
-                service=chrome_service, chrome_options=chrome_options
-            )
+        self.driver = webdriver.Chrome(
+            service=chrome_service, chrome_options=chrome_options
+        )
 
     def check_if_elements_exist(self):
         if self.elements.element_error_flag:
@@ -377,7 +369,9 @@ class MainWebDriver(object):
 
         self.netsuite_sso = links_object["Netsuite_SSO"]
 
-        chrome_service = ChromeService("chromedriver")
+        chrome_service = ChromeService(
+            executable_path="./chromedriver-win64/chromedriver.exe"
+        )
         chrome_service.creation_flags = CREATE_NO_WINDOW
         chrome_options = Options()
 
@@ -391,11 +385,7 @@ class MainWebDriver(object):
         )
 
         try:
-            if links_object["Chrome_Driver"][1]:
-                chrome_service = links_object["Chrome_Driver"][0]
-                self.run_driver(chrome_service, chrome_options, True)
-            else:
-                self.run_driver(chrome_service, chrome_options, False)
+            self.run_driver(chrome_service, chrome_options, False)
         except (
             exceptions.SessionNotCreatedException,
             exceptions.SeleniumManagerException,

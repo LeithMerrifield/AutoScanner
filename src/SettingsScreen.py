@@ -12,13 +12,10 @@ class SettingsScreen(Screen):
     def save_and_return(self):
         self.netsuite_sso = self.ids.netsuite_sso_setting.text
         self.netsuite = self.ids.netsuite_setting.text
-        self.chrome_driver = self.ids.chrome_driver_setting.text
-        self.chrome_driver_manual = self.ids.chrome_driver_manual.active
         self.timeout_avoidance = self.ids.timeout_avoidance_setting.active
         json_object = {
             "Netsuite_SSO": self.netsuite_sso,
             "Netsuite": self.netsuite,
-            "Chrome_Driver": [self.chrome_driver, self.chrome_driver_manual],
             "Timeout_Avoidance": self.timeout_avoidance,
         }
 
@@ -37,7 +34,6 @@ class SettingsScreen(Screen):
                 json_object = {
                     "Netsuite_SSO": "Replace with Netsuite SSO",
                     "Netsuite": "https://5230881.app.netsuite.com/app/center/card.nl?sc=-29&whence=",
-                    "Chrome_Driver": ["./chromedriver-win64/chromedriver.exe", False],
                     "Timeout_Avoidance": True,
                 }
                 json.dump(json_object, openfile, indent=4)
@@ -47,13 +43,9 @@ class SettingsScreen(Screen):
 
         self.netsuite_sso = json_object["Netsuite_SSO"]
         self.netsuite = json_object["Netsuite"]
-        self.chrome_driver = json_object["Chrome_Driver"][0]
-        self.chrome_driver_manual = json_object["Chrome_Driver"][1]
         self.timeout_avoidance = json_object["Timeout_Avoidance"]
 
         self.ids.timeout_avoidance_setting.active = self.timeout_avoidance
-        self.ids.chrome_driver_manual.active = self.chrome_driver_manual
-        self.ids.chrome_driver_setting.text = self.chrome_driver
         self.ids.netsuite_sso_setting.text = self.netsuite_sso
         self.ids.netsuite_setting.text = self.netsuite
         openfile.close()
