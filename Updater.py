@@ -24,7 +24,7 @@ def get_app_download_link(target_version):
 
 def delete_contents():
     keep = ["Updater.exe", "database.json", "src", "userdata", "app.zip"]
-    for root, dir, files in os.walk("./Scanner"):
+    for root, dir, files in os.walk("./"):
         for name in files:
             if name not in keep:
                 try:
@@ -39,6 +39,7 @@ def delete_contents():
 
 def move_from_temp():
     temp_destination = GetLongPathName(tempfile.gettempdir())
+    os.remove(temp_destination + "/Autoscanner/Updater.exe")
     shutil.copytree(
         temp_destination + "/Autoscanner",
         "./",
@@ -47,8 +48,8 @@ def move_from_temp():
 
 
 def check_scanner_folder():
-    if not os.path.isdir("./Scanner"):
-        os.mkdir("./Scanner")
+    if not os.path.isdir("./"):
+        os.mkdir("./")
     return
 
 
@@ -64,7 +65,7 @@ def create_shortcut():
         if "Autoscanner" in item:
             os.remove(desktop + "/" + item)
 
-    current_dir = os.path.abspath(os.getcwd() + "/Scanner/Autoscanner.exe")
+    current_dir = os.path.abspath(os.getcwd() + "/Autoscanner.exe")
     current_dir = current_dir.split("\\")
     current_dir = "/".join(current_dir)
     # fmt: off
@@ -106,9 +107,9 @@ def clean():
 
 def update():
     # compare versions
-    check_scanner_folder()
+    # check_scanner_folder()
     local_version = CheckDriver.get_local_version(
-        "App_Version", filepath="./Scanner/src/versions.json"
+        "App_Version", filepath="./src/versions.json"
     )
     remote_version = CheckDriver.get_webpage_content(LATEST_APP_VERSION)
 
@@ -127,9 +128,9 @@ def update():
     )
     sleep(2)
     move_from_temp()
-    CheckDriver.check_file(filepath="./Scanner/src/versions.json")
+    CheckDriver.check_file(filepath="./src/versions.json")
     CheckDriver.update_version(
-        remote_version, "App_Version", filepath="./Scanner/src/versions.json"
+        remote_version, "App_Version", filepath="./src/versions.json"
     )
 
     sleep(2)
