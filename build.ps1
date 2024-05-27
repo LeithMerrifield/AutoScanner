@@ -1,4 +1,4 @@
-./venv/Scripts/Activate
+./.venv/Scripts/Activate
 python.exe -m PyInstaller ./Updater.spec
 python.exe -m PyInstaller ./Autoscanner.spec
 
