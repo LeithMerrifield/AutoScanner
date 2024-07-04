@@ -115,6 +115,7 @@ class MainWebDriver(object):
                 self.try_click_element(self.elements.BINNUMBER)
                 self.try_click_element(self.elements.ITEMNUMBER)
 
+                sleep(self.pick_delay)
                 amount = self.try_return_text_element(
                     self.elements.QUANTITYAMOUNT
                 ).split(" ")[0]
